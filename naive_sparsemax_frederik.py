@@ -1,4 +1,8 @@
+## naive implementation of sparsemax
+## (made for learning purposes)
+
 import numpy as np
+from matplotlib import pyplot as plt
 
 def sparsemax(z_array, return_tau=False):
     """
@@ -22,7 +26,7 @@ def sparsemax(z_array, return_tau=False):
         max_k = np.NaN
 
         # step 2: find argmax_k
-        for k in range(1, z_array.shape[1]):
+        for k in range(1, z_array.shape[1] + 1):
             if 1 + k * sorted_z[row, k - 1] > np.sum(sorted_z[row, :k]):
                 max_k = k
             else:
@@ -85,3 +89,10 @@ for i, tau in enumerate(taus):
     print("predicted: ", p_array[i, :])
     print("target: ", twod_targets[i])
     print("loss: ", loss_sparsemax(twod_test[i, :], p_array[i, :], twod_targets[i], tau))
+
+# try to create some plots
+
+t_seq = np.arange(-3, 3, 0.1)
+p_seq = [sparsemax(np.array([[t_seq[i], 0]]))[0, 0] for i in range(t_seq.shape[0])]
+plt.plot(t_seq, p_seq)
+plt.figure()
