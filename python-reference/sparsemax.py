@@ -25,6 +25,7 @@ def forward(z):
     tau_sum = z_cumsum[np.arange(0, z.shape[0]), k_z - 1]
     tau_z = ((tau_sum - 1) / k_z).reshape(-1, 1)
 
+    # calculate p
     return np.maximum(0, z - tau_z)
 
 
