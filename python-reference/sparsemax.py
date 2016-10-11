@@ -1,8 +1,11 @@
 import numpy as np
 
 
-def tau(z):
-    """Calculates tau(z)
+def forward(z):
+    """forward pass for sparsemax
+
+    this will process a 2d-array $z$, where axis 1 (each row) is assumed to be
+    the the z-vector.
     """
 
     # sort z
@@ -20,16 +23,9 @@ def tau(z):
 
     # calculate tau(z)
     tau_sum = z_cumsum[np.arange(0, z.shape[0]), k_z - 1]
-    return ((tau_sum - 1) / k_z).reshape(-1, 1)
+    tau_z = ((tau_sum - 1) / k_z).reshape(-1, 1)
 
-
-def forward(z):
-    """forward pass for sparsemax
-
-    this will process a 2d-array $z$, where axis 1 (each row) is assumed to be
-    the the z-vector.
-    """
-    return np.maximum(0, z - tau(z))
+    return np.maximum(0, z - tau_z)
 
 
 def jacobian(z):

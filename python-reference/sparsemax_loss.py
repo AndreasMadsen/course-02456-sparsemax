@@ -15,9 +15,10 @@ def forward(z, q):
     z_k = np.sum(q * z, axis=1)
 
     # calculate sum over S(z)
-    tau_z = sparsemax.tau(z)
-    s = z > tau_z
-    S_sum = np.sum(s * (z**2 - tau_z**2), axis=1)
+    p = sparsemax.forward(z)
+    s = p > 0
+    # z_i^2 - tau(z)^2 = p_i (2 * z_i - p_i) for i \in S(z)
+    S_sum = np.sum(s * p * (2 * z - p), axis=1)
 
     # because q is binary, sum([q_1^2, q_2^2, ...]) is just sum(q)
     q_norm = np.sum(q, axis=1)
