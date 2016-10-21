@@ -3,10 +3,12 @@
 # -O2: level 2 optimizations
 # -isystem: like -I for include but ignores warning from that source
 OS=$(shell uname)
+NVCC=nvcc
 CXX=g++
 CXXFLAGS=-std=c++11
 CFLAGS=-fPIC -O2
-CPPFLAGS=-isystem $(shell python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
+NVCCFLAGS=-x cu -Xcompiler -fPIC
+CPPFLAGS=-isystem $(shell python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())') -D_GLIBCXX_USE_CXX11_ABI=0
 LDFLAGS=
 
 # OS specific rules
@@ -15,14 +17,31 @@ ifeq ($(OS), Darwin)
 LDFLAGS+=-undefined dynamic_lookup
 endif
 
-# just linking no compiling
-kernel/square.so: kernel/custom_square.o
-	$(CXX) -D_GLIBCXX_USE_CXX11_ABI=0 $(LDFLAGS) -shared $^ -o $@
+# GPU on HPC
+ifneq (, $(shell which nvcc))
+LDFLAGS+=-L /appl/cuda/8.0/lib64 -L /appl/cudnn/v5.1-prod/lib64 -lcudart
+CFLAGS+=-D GOOGLE_CUDA=1
+NVCCFLAGS+=-D GOOGLE_CUDA=1
+endif
 
-# generalized compile rule for c++
+
+# square.so target
+SQUARE_OBJS=kernel/custom_square.o
+ifneq (, $(shell which nvcc))
+SQUARE_OBJS+=kernel/custom_square.cu.o
+endif
+
+kernel/square.so: $(SQUARE_OBJS)
+	$(CXX) $(LDFLAGS) -shared $^ -o $@
+
+# generalized compile rule for c++ and CUDA
+%.cu.o: %.cu.cc
+	$(NVCC) $(CXXFLAGS) $(CPPFLAGS) $(NVCCFLAGS) -c -o $@ $<
+
 %.o: %.cc
-	$(CXX) -D_GLIBCXX_USE_CXX11_ABI=0 $(CXXFLAGS) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm **/*.o
-	rm **/*.so
+	rm -f **/*.o
+	rm -f **/*.so
+	rm -rf kernel/__pycache__
