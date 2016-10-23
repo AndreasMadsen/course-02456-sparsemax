@@ -1,8 +1,10 @@
 ## naive implementation of sparsemax
 ## (made for learning purposes)
+## test this file with "nosetests naive_sparsemax_frederik.py"
 
 import numpy as np
 from matplotlib import pyplot as plt
+import unittest
 
 def sparsemax(z_array, return_tau=False):
     """
@@ -65,34 +67,55 @@ def loss_sparsemax(z_vector, p_vector, target_label, tau_threshold):
     s = p_vector > 0
     return -z_vector[target_label] + 0.5 * np.sum(np.power(z_vector[s], 2) - tau_threshold ** 2 ) + 0.5
 
-oned_test = np.array([[5, 3, 0]])
-twod_test = np.array([[5, 3, 0], [2, 2.7, 0]])
-twod_targets = np.array([0, 1])
 
-print("trying to evaluate sparsemax")
-print(sparsemax(oned_test))
-print(sparsemax(twod_test))
+class Tests(unittest.TestCase):
+    def test_evaluate_function_numpy2darrays(self):
+        # test that function evaluations gives the expected output
+        one_row_input = np.array([[5, 3, 0]])
+        res_one = sparsemax(one_row_input)
+        for pair in zip(res_one.ravel(), [1, 0, 0]):
+            self.assertEqual(pair[0], pair[1]) 
+        
+        # test that it also works in the case of multiple input rows
+        two_rows_input = np.array([[5, 3, 0], [2, 2.7, 0]])
+        res_two = sparsemax(two_rows_input);
+        print(res_two)
+        expected = [[1, 0, 0], [((2 + 1) - 2.7 )/ 2, ((2.7 + 1) - 2 )/ 2, 0]]
+        for row_pair in zip(res_two, expected):
+            for pair in zip(row_pair[0].ravel(), row_pair[1]):
+                self.assertAlmostEqual(pair[0], pair[1], 10)
+    
+    def test_jacobian_times_zvector(self):
+        test_input = np.array([[5, 3, 7], [3.6, 2.7, 3.5]])
+        f_eval = sparsemax(test_input)
+        for i in range(test_input.shape[0]):
+            f_eval_row = f_eval[i, :]
+            jacobian = jacobian_sparsemax(f_eval_row)
+            # eval directly
+            expected = np.dot(jacobian, test_input[i, :])
+            # eval indirectly
+            actual = jacobian_sparsemax_times_vector(f_eval_row, test_input[i, :])
+            for pair in zip(expected, actual):
+                self.assertAlmostEqual(pair[0], pair[1])
 
-print("\nTesting jacobian")
-for i, row in enumerate(sparsemax(twod_test)):
-    print("\ntesting row {0}".format(i))
-    print("z: ", twod_test[i, :])
-    print("sparse p: ", row)
-    print("jacobian: ", jacobian_sparsemax(row))
-    print("jacobian * z (indirectly): ", jacobian_sparsemax_times_vector(row, twod_test[i, :]))
-    print("jacobian * z (directly): ", np.dot(jacobian_sparsemax(row), twod_test[i, :]))
+    def test_loss(self):
+        test_input = np.array([[5, 3, 7, 0], [3.6, 2.7, 3.5, 0]])
+        actual_correct_class = [2, 2]
+        expected_loss = [0, 0.3025]
+        [p_array, taus] = sparsemax(test_input, return_tau=True)
+        for i, pair in enumerate(zip(p_array, taus)):
+            loss = loss_sparsemax(test_input[i, :], p_array[i, :], actual_correct_class[i], taus[i])
+            self.assertAlmostEqual(loss, expected_loss[i])
 
-[p_array, taus] = sparsemax(twod_test, return_tau=True)
-print("\ntesting loss")
-for i, tau in enumerate(taus):
-    print("z:", twod_test[i, :])
-    print("predicted: ", p_array[i, :])
-    print("target: ", twod_targets[i])
-    print("loss: ", loss_sparsemax(twod_test[i, :], p_array[i, :], twod_targets[i], tau))
 
-# try to create some plots
 
-t_seq = np.arange(-3, 3, 0.1)
-p_seq = [sparsemax(np.array([[t_seq[i], 0]]))[0, 0] for i in range(t_seq.shape[0])]
-plt.plot(t_seq, p_seq)
-plt.figure()
+if  __name__ == "__main__":
+    t = Tests()
+    t.test_evaluate_function_numpy2darrays()
+    t.test_jacobian_times_zvector()
+    t.test_loss()
+
+    # make a plot to check shape
+    t_seq = np.arange(-3, 3, 0.1)
+    p_seq = [sparsemax(np.array([[t_seq[i], 0]]))[0, 0] for i in range(t_seq.shape[0])]
+    plt.plot(t_seq, p_seq)
