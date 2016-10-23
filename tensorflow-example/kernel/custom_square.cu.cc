@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 
 #if GOOGLE_CUDA
 #define EIGEN_USE_GPU
@@ -12,7 +12,7 @@ __global__ void CustomSquareKernel(const int* in, const int N, int* out) {
 }
 
 void CustomSquareKernelLauncher(const int* in, const int N, int* out) {
-  printf("> debug: c++ gpu-launcher\n");
+  std::printf("> debug: c++ gpu-launcher\n");
   CustomSquareKernel<<<32, 256>>>(in, N, out);
 }
 

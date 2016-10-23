@@ -6,8 +6,8 @@ OS=$(shell uname)
 NVCC=nvcc
 CXX=g++
 CXXFLAGS=-std=c++11
-CFLAGS=-fPIC -O2
-NVCCFLAGS=-x cu -Xcompiler -fPIC
+CFLAGS=-fPIC -O2 -Wall -Wextra
+NVCCFLAGS=-x cu -Xcompiler -fPIC -Wall -Wextra
 CPPFLAGS=-isystem $(shell python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())') -D_GLIBCXX_USE_CXX11_ABI=0
 LDFLAGS=
 

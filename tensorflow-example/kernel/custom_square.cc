@@ -1,7 +1,7 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/shape_inference.h"
-#include <stdio.h>
+#include <cstdio>
 
 using namespace tensorflow;
 
@@ -32,7 +32,7 @@ class CustomSquareCPUOp : public OpKernel {
     auto output = output_tensor->flat<int32>();
 
     // output = input * input
-    printf("> debug: c++ cpu-op\n");
+    std::printf("> debug: c++ cpu-op\n");
     const int N = input.size();
     for (int i = 0; i < N; i++) {
       output(i) = input(i) * input(i);
@@ -61,7 +61,7 @@ class CustomSquareGPUOp : public OpKernel {
     auto output = output_tensor->template flat<int32>();
 
     const int N = input.size();
-    printf("> debug: c++ gpu-op\n");
+    std::printf("> debug: c++ gpu-op\n");
     CustomSquareKernelLauncher(input.data(), N, output.data());
   }
 };
