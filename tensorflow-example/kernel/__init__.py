@@ -32,4 +32,4 @@ def _zero_out_grad(op, grad):
     # chain gradient `grad`.
     print('> debug: python grad')
     source = op.inputs[0]
-    return [2 * source]  # List of one Tensor, since we have one input
+    return [grad * (2 * source)]  # List of one Tensor, since we have one input
