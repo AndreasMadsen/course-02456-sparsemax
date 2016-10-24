@@ -102,3 +102,25 @@ def test_two_dimentional():
 
     np.testing.assert_almost_equal(p[:, 0], p0_expected)
     np.testing.assert_almost_equal(p[:, 1], 1 - p0_expected)
+
+
+def test_Rop():
+    """check sparsemax Rop, aginst estimated Rop"""
+    z = np.random.uniform(low=-3, high=3, size=(100, 10))
+
+    var = tf.placeholder(tf.float64, name='x')
+    sparsemax = kernel.sparsemax(var)
+
+    with tf.Session() as sess:
+        # https://www.tensorflow.org/versions/r0.8/api_docs/python/test.html
+        analytical, numerical = tf.test.compute_gradient(
+            var, z.shape,
+            kernel.sparsemax(var), z.shape,
+            x_init_value=z, delta=1e-9
+        )
+
+        np.testing.assert_almost_equal(
+            analytical,
+            numerical,
+            decimal=4
+        )
