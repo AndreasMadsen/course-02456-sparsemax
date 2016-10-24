@@ -6,14 +6,19 @@ import tensorflow as tf
 from tensorflow.python.framework import ops, common_shapes
 
 _thisdir = path.dirname(path.realpath(__file__))
-_sparsemax_module = tf.load_op_library(path.join(_thisdir, 'sparsemax.so'))
+_sparsemax_module = tf.load_op_library(
+    path.join(_thisdir, 'sparsemax.so'))
+_sparsemax_loss_module = tf.load_op_library(
+    path.join(_thisdir, 'sparsemax_loss.so'))
 
 sparsemax = _sparsemax_module.sparsemax
+sparsemax_loss = _sparsemax_loss_module.sparsemax_loss
 
 # documentation says:
 # @tf.RegisterShape("CustomSquare")(common_shapes.call_cpp_shape_fn)
 # but that is not valid, syntax. From tensorflow source code it looks to be:
 ops.RegisterShape("Sparsemax")(common_shapes.call_cpp_shape_fn)
+ops.RegisterShape("SparsemaxLoss")(common_shapes.call_cpp_shape_fn)
 
 
 @ops.RegisterGradient("Sparsemax")
