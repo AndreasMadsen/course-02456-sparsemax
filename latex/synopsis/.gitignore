@@ -2,6 +2,7 @@
 *.bcf
 *.log
 *.pdf
-*.run
-*.synctex
+*.run*
+*.out
+*.synctex*
 *.swp
