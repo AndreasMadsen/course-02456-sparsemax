@@ -42,3 +42,29 @@ def _sparsemax_grad(op, grad):
 
     # Calculates J(z) * v
     return [support * (grad - v_hat[:, np.newaxis])]
+
+
+@ops.RegisterGradient("SparsemaxLoss")
+def _sparsemax_loss_grad(op, grad):
+    """The gradients for the SparsemaxLoss op.
+
+    Args:
+    op: The `SparsemaxLoss` operation that we are differentiating, which we
+      can use to find the inputs and outputs of the original op.
+    grad: Gradient with respect to the output of the `SparsemaxLoss` op.
+
+    Returns:
+    Gradients with respect to the input of `SparsemaxLoss`.
+    """
+    # Construct S(z)
+    sparsemax = op.inputs[1]
+    labels = op.inputs[2]
+
+    # TODO: figure out why two transposed are required. Maybe something
+    # with grad being a vector, thus tf.transpose is wiredly defined.
+    # J(z, q) * v.T = (v * J(z, q).T).T
+    return [
+        tf.transpose(grad * tf.transpose(-labels + sparsemax)),
+        None,
+        None
+    ]

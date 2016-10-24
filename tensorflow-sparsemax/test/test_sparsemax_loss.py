@@ -70,3 +70,29 @@ def test_zero_loss():
         sparsemax(z),
         q
     )
+
+
+def test_Rop():
+    """check sparsemax-loss Rop, aginst estimated Rop"""
+    z = np.random.uniform(low=-3, high=3, size=(100, 10))
+    q = np.zeros((100, 10))
+    q[np.arange(0, 100), np.random.randint(0, 10, size=100)] = 1
+
+    logits = tf.placeholder(tf.float64, name='z')
+    labels = tf.constant(q, name='q')
+    sparsemax = kernel.sparsemax(logits)
+    loss = kernel.sparsemax_loss(logits, sparsemax, labels)
+
+    with tf.Session() as sess:
+        # https://www.tensorflow.org/versions/r0.8/api_docs/python/test.html
+        analytical, numerical = tf.test.compute_gradient(
+            logits, z.shape,
+            kernel.sparsemax_loss(logits, sparsemax, labels), (100, ),
+            x_init_value=z, delta=1e-9
+        )
+
+        np.testing.assert_almost_equal(
+            analytical,
+            numerical,
+            decimal=4
+        )
