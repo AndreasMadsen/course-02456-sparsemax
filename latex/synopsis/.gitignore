@@ -1,0 +1,7 @@
+*.aux
+*.bcf
+*.log
+*.pdf
+*.run
+*.synctex
+*.swp
