@@ -1,3 +1,8 @@
+.PHONY: test lint
+
+#
+# Compiler flags
+#
 
 # -fPIC: means Position Independent Code
 # -O2: level 2 optimizations
@@ -24,24 +29,32 @@ CFLAGS+=-D GOOGLE_CUDA=1
 NVCCFLAGS+=-D GOOGLE_CUDA=1
 endif
 
-
-# square.so target
-SQUARE_OBJS=kernel/custom_square.o
-ifneq (, $(shell which nvcc))
-SQUARE_OBJS+=kernel/custom_square.cu.o
-endif
-
-kernel/square.so: $(SQUARE_OBJS)
+#
+# Build for .so, c++ and CUDA
+#
+%.so:
 	$(CXX) $(LDFLAGS) -shared $^ -o $@
 
-# generalized compile rule for c++ and CUDA
 %.cu.o: %.cu.cc
+ifneq (, $(shell which nvcc))
 	$(NVCC) $(CXXFLAGS) $(CPPFLAGS) $(NVCCFLAGS) -c -o $@ $<
+else
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+endif
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
+#
+# User friendly rules
+#
+all: square-all
+test: square-test
+lint: square-lint
+
+include tensorflow-square/build.mk
+
 clean:
-	rm -f **/*.o
-	rm -f **/*.so
-	rm -rf kernel/__pycache__
+	rm -f **/**/*.o
+	rm -f **/**/*.so
+	rm -rf **/**/__pycache__

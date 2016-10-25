@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.python.framework import ops, common_shapes
 
 _thisdir = path.dirname(path.realpath(__file__))
-_square_module = tf.load_op_library(path.join(_thisdir, 'square.so'))
+_square_module = tf.load_op_library(path.join(_thisdir, 'custom_square.so'))
 
 square = _square_module.custom_square
 
