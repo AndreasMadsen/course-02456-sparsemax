@@ -1,3 +1,7 @@
+
+#define EIGEN_USE_THREADS
+
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
@@ -6,6 +10,8 @@
 #include <algorithm>
 
 using namespace tensorflow;
+
+typedef Eigen::ThreadPoolDevice CPUDevice;
 
 REGISTER_OP("SparsemaxLoss")
   .Input("logits: T")
@@ -32,7 +38,7 @@ Computes sparsemax loss function [1].
 
 )doc");
 
-template <typename T>
+template <typename Device, typename T>
 class SparsemaxLossOp : public OpKernel {
  public:
   explicit SparsemaxLossOp(OpKernelConstruction* context) : OpKernel(context) {}
@@ -67,53 +73,46 @@ class SparsemaxLossOp : public OpKernel {
                    context->allocate_output(0, TensorShape({logits_in.dim_size(0)}),
                    &loss_out));
 
-    // define 0 and 0.5 in matching template type
-    T zero = static_cast<T>(0);
-    T half = static_cast<T>(0.5);
-
     // Setup data view
     auto logits = logits_in.matrix<T>();
     auto sparsemax = sparsemax_in.matrix<T>();
     auto labels = labels_in.matrix<T>();
     auto losses = loss_out->flat<T>();
 
-    // get input size
-    const int num_rows = logits.dimension(0); // batch_size
-    const int num_cols = logits.dimension(1);
+    // define class axis
+    const int kClassDim = 1;
+    #if !defined(EIGEN_HAS_INDEX_LIST)
+        Eigen::DSizes<int, 1> along_class(kClassDim);
+    #else
+        Eigen::IndexList<Eigen::type2index<kClassDim> > along_class;
+    #endif
 
-    // calculate loss for each row
-    T loss_temp;
-    for (int r = 0; r < num_rows; r++) {
-      // reset loss for each observation
-      loss_temp = zero;
+    T zero = static_cast<T>(0);
+    T half = static_cast<T>(0.5);
 
+    // z_k
+    auto z_k = labels * logits;
 
-      for (int c = 0; c < num_cols; c++) {
-        // -q^T z
-        loss_temp += - labels(r, c) * logits(r, c);
+    // sum over support
+    auto support = (sparsemax > zero).template cast<T>();
+    auto sum_s = support * sparsemax * (logits - half * sparsemax);
 
-        // 0.5 * sum(z_j^2 - tau(z)^2, forall S(z))
-        // note that z_i^2 - tau(z)^2 = p_i (2 * z_i - p_i) forall i in S(z)
-        // also that 0.5 * p_i (2 * z_i - p_i) = p_i * (z_i - 0.5 * p_i)
-        if (sparsemax(r, c) > zero) {
-          loss_temp += sparsemax(r, c) * (logits(r, c) - half * sparsemax(r, c));
-        }
+    // q norm
+    auto q_norm = half * (labels * labels);
 
-        // 0.5 * ||q||^2
-        loss_temp += half * labels(r, c) * labels(r, c);
-      }
-
-      losses(r) = loss_temp;
-    }
+    const Device& eigen_device = context->eigen_device<Device>();
+    losses.device(eigen_device) = (-z_k + sum_s + q_norm)
+      .sum(along_class)
+      .eval();
   }
 };
 
-#define REGISTER_CPU(T) REGISTER_KERNEL_BUILDER(                 \
-    Name("SparsemaxLoss").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
-    SparsemaxLossOp<T>);
+#define REGISTER(Dev, T) REGISTER_KERNEL_BUILDER(                 \
+    Name("SparsemaxLoss").Device(DEVICE_##Dev).TypeConstraint<T>("T"), \
+    SparsemaxLossOp<Dev##Device, T>);
 
-TF_CALL_half(REGISTER_CPU);
-TF_CALL_float(REGISTER_CPU);
-TF_CALL_double(REGISTER_CPU);
+REGISTER(CPU, Eigen::half);
+REGISTER(CPU, float);
+REGISTER(CPU, double);
 
-#undef REGISTER_CPU
+#undef REGISTER
