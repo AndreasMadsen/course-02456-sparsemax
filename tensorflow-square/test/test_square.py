@@ -24,7 +24,6 @@ def test_square_operator():
 def test_shape():
     """test square shape function"""
     with tf.Session():
-        print(kernel.square(data).get_shape())
         np.testing.assert_array_equal(
             kernel.square(data).get_shape(),
             (2, 2)

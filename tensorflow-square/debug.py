@@ -1,6 +1,10 @@
 
+import os
 import tensorflow as tf
 import kernel
+
+# enable debug mode in c++ kernel and python gradient
+os.environ["DEBUG"] = "1"
 
 with tf.Session():
     var = tf.placeholder(tf.int32, name='x')

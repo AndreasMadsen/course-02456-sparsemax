@@ -1,4 +1,5 @@
 
+import os
 import os.path as path
 
 import tensorflow as tf
@@ -30,6 +31,8 @@ def _zero_out_grad(op, grad):
     # note op.inputs[0] is not yet evaluated, it is just the subgraph
     # representing the input. Same goes for the `op.outputs[i]`` and the
     # chain gradient `grad`.
-    print('> debug: python grad')
+    if ('DEBUG' in os.environ):
+        print('> debug: python grad')
+
     source = op.inputs[0]
     return [grad * (2 * source)]  # List of one Tensor, since we have one input

@@ -1,7 +1,16 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/shape_inference.h"
+
+#include <string>
+#include <cstdlib>
 #include <cstdio>
+
+static void debugprint(std::string msg) {
+    if (std::getenv("DEBUG")) {
+      std::printf("> debug: %s\n", msg.c_str());
+    }
+}
 
 using namespace tensorflow;
 
@@ -11,7 +20,7 @@ REGISTER_OP("CustomSquare")
     .Input("source: int32")
     .Output("squared: int32")
     .SetShapeFn([](shape_inference::InferenceContext* c) {
-      printf("> debug: c++ shape\n");
+      debugprint("c++ shape");
       c->set_output(0, c->input(0));
       return Status::OK();
     });
@@ -32,7 +41,7 @@ class CustomSquareCPUOp : public OpKernel {
     auto output = output_tensor->flat<int32>();
 
     // output = input * input
-    std::printf("> debug: c++ cpu-op\n");
+    debugprint("c++ cpu-op");
     const int N = input.size();
     for (int i = 0; i < N; i++) {
       output(i) = input(i) * input(i);
@@ -61,7 +70,7 @@ class CustomSquareGPUOp : public OpKernel {
     auto output = output_tensor->template flat<int32>();
 
     const int N = input.size();
-    std::printf("> debug: c++ gpu-op\n");
+    debugprint("c++ gpu-op");
     CustomSquareKernelLauncher(input.data(), N, output.data());
   }
 };
