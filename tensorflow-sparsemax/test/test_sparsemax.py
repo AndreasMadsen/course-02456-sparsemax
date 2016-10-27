@@ -104,18 +104,21 @@ def test_two_dimentional():
     np.testing.assert_almost_equal(p[:, 1], 1 - p0_expected)
 
 
-def test_Rop():
+def test_Rop_estimated():
     """check sparsemax Rop, aginst estimated Rop"""
     z = np.random.uniform(low=-3, high=3, size=(100, 10))
+    w = np.random.normal(size=(10, 10))
 
-    var = tf.placeholder(tf.float64, name='x')
-    sparsemax = kernel.sparsemax(var)
+    logits = tf.placeholder(tf.float64, name='z')
+    weights = tf.constant(w, name='w')
+    sparsemax = kernel.sparsemax(logits)
+    sparsemax_transform = tf.matmul(sparsemax, weights)
 
     with tf.Session() as sess:
         # https://www.tensorflow.org/versions/r0.8/api_docs/python/test.html
         analytical, numerical = tf.test.compute_gradient(
-            var, z.shape,
-            kernel.sparsemax(var), z.shape,
+            logits, z.shape,
+            sparsemax_transform, z.shape,
             x_init_value=z, delta=1e-9
         )
 
@@ -123,4 +126,39 @@ def test_Rop():
             analytical,
             numerical,
             decimal=4
+        )
+
+
+def test_Rop_numpy():
+    """check sparsemax Rop, aginst numpy Rop"""
+    z = np.random.uniform(low=-3, high=3, size=(100, 10))
+    w = np.random.normal(size=(10, 10))
+
+    logits = tf.placeholder(tf.float64, name='z')
+    weights = tf.constant(w, name='w')
+    sparsemax = kernel.sparsemax(logits)
+    # tensorflow uses the chainrule forward (left to right), meaning that:
+    #   $dS(z)*w/d(z) = dS(z)*w/dS(z) * dS(z)/dz = Rop(S)(z, Rop(*)(w, 1))$
+    # Thus to test the Rop for sparsemax correctly a weight matrix is
+    # multiplied. This causes the grad (v) in the Rop to be $dS(z)*w/dS(z)$.
+    sparsemax_transform = tf.matmul(sparsemax, weights)
+    sparsemax_transform_grad = tf.gradients(sparsemax_transform, [logits])[0]
+
+    with tf.Session() as sess:
+        # chain rule
+        grad = np.dot(np.ones_like(z), w.T)
+
+        # Construct S(z)
+        properbility = sparsemax.eval({logits: z})
+        support = properbility > 0
+
+        # Calculate \hat{v}, which will be a vector (scalar for each z)
+        v_hat = np.sum(grad * support, axis=1) / np.sum(support, axis=1)
+
+        # Calculates J(z) * v
+        numpy_grad = support * (grad - v_hat[:, np.newaxis])
+
+        np.testing.assert_almost_equal(
+            sparsemax_transform_grad.eval({logits: z}),
+            numpy_grad
         )

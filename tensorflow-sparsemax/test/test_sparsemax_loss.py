@@ -72,7 +72,7 @@ def test_zero_loss():
     )
 
 
-def test_Rop():
+def test_Rop_estimated():
     """check sparsemax-loss Rop, aginst estimated Rop"""
     z = np.random.uniform(low=-3, high=3, size=(100, 10))
     q = np.zeros((100, 10))
@@ -95,4 +95,23 @@ def test_Rop():
             analytical,
             numerical,
             decimal=4
+        )
+
+
+def test_Rop_numpy():
+    """check sparsemax-loss Rop, aginst numpy Rop"""
+    z = np.random.uniform(low=-3, high=3, size=(5, 3))
+    q = np.zeros((5, 3))
+    q[np.arange(0, 5), np.random.randint(0, 3, size=5)] = 1
+
+    logits = tf.placeholder(tf.float64, name='z')
+    labels = tf.placeholder(tf.float64, name='q')
+    sparsemax = kernel.sparsemax(logits)
+    loss = kernel.sparsemax_loss(logits, sparsemax, labels)
+    grad = tf.gradients(loss, [logits])[0]
+
+    with tf.Session() as sess:
+        np.testing.assert_array_equal(
+            grad.eval({logits: z, labels: q}),
+            -q + sparsemax.eval({logits: z})
         )
