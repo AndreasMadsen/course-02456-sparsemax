@@ -1,0 +1,92 @@
+
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}	% Flere sprog tegnsæt (fx æøå)
+\usepackage[english]{babel}	% Engelsk orddeling og caption tekst
+\usepackage[T1]{fontenc}		% Brug 8-bit front
+\usepackage{lmodern}		% Vektor front
+\usepackage{amsmath} % pænere OR code
+\usepackage{graphicx}	% Kompatibilitet til visning af pixel billeder (.png, .jpg, .gif)
+\usepackage{epstopdf}	% Kompatibilitet til visning af vector billeder (.eps)
+\usepackage{float}		% TIllader H som positions parameter
+%\usepackage{mathtools}	% Det meste matematik (indeholder ams­math og rettelser)
+\usepackage{amssymb}	% Flere matematiske symboler
+\usepackage{xfrac}		% Flere fracs (\sfrac{}{})
+\usepackage{qtree}		% Tableau træ
+\usepackage{listings}	% Indsæt code
+\usepackage{fancyhdr}	% Side hoved og sidefod
+\usepackage{todonotes}	% Cool todo notes, [disable] skjuler todos
+\usepackage{parskip}	% Tillader paragraph vertical margin
+\usepackage{url}		% Tillader \url formatering
+\usepackage{subcaption}	% Tilader subfigure og subtable samt captions i dem
+\usepackage{sectsty}
+\usepackage{nth}
+\usepackage{csquotes}	% Anbefalet package for BibLaTeX
+\usepackage[backend=biber,style=ieee]{biblatex}				% Benyt BibLaTeX til formatering
+\usepackage{tabularx}
+\usepackage {tikz} %drawing graphs
+\usetikzlibrary{positioning}
+
+\usepackage[bookmarks,bookmarksnumbered,hidelinks]{hyperref} % clickable pdf (til sidst)
+
+
+
+%listing settings, æøå support, font config, line number, left lines
+\lstset{
+    breakatwhitespace=false, breaklines=true,
+    inputencoding=utf8, extendedchars=true,
+ keywordstyle=\color{blue}\ttfamily,
+    literate={å}{{\aa}}1 {æ}{{\ae}}1 {ø}{{\o}}1 {Å}{{\AA}}1 {Æ}{{\AE}}1 {Ø}{{\O}}1,
+    keepspaces=true, basicstyle=\small\ttfamily,
+    showstringspaces=false,
+    frame=L, numbers=left, numberstyle=\scriptsize\color{gray},
+} 
+
+% Referencer bliver i to trin, #section.#count
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\addbibresource{sources.bib}					% Tilføjer sources.bib som reference katalog
+\setcounter{secnumdepth}{5}					% Tæl paragraph sektioner
+\subsubsectionfont{\fontsize{11}{8}\selectfont}		% Gør subsubsection lidt større end paragraph
+\setlength{\marginparwidth}{80pt} 				% Mere brede på margin notes og todos
+\setlength{\parindent}{15pt}					% Giver lidt luft imellem afsnitene
+\setlength{\parindent}{0cm}   					% Deaktiver afsnit indrykning
+\DeclareGraphicsExtensions{.pdf,.eps,.png,.jpg,.gif}	% ændre til .png, .jpg for hurtig visning
+\DeclareMathOperator*{\argmin}{arg\,min}
+\pagestyle{fancy}
+\fancyhead[L]{}
+\fancyhead[R]{}
+
+\title{	
+\normalsize{DTU - course 02456: Fall 2016}\\
+\Large Project: Implementing Sparsemax for RNNs using TensorFlow
+}
+
+\author
+{ \normalsize
+	Andreas Madsen(s123598) - s123598@student.dtu.dk\\
+	Marco Dal Farra Kristensen(s152630) - s152630@student.dtu.dk\\
+	Frederik Wolgast Rørbech(s123956) - s123956@student.dtu.dk
+} % Your name
+\date{} % Today's date or a custom date
+
+\begin{document}
+\maketitle
+\section*{Synopsis}
+\subsection*{Introduction}
+This project aims at implementing the Sparsemax activation function \footnote{"From Softmax to Sparsemax:
+	A Sparse Model of Attention and Multi-Label Classification"} in TensorFlow. The Sparsemax transformation is similar to Softmax but instead of dense probability distribution gives a sparse distribution. This could be useful in many cases but this report will focus on the application for RNNs where sparse attention could be particularly useful (for instance when encoding-decoding long sentences).
+
+\subsection*{Datasets}
+The focus of this report isn't on achieving a certain result on a specific dataset. The TensorFlow implementation will have to be tested on a variety of benchmark datasets with "standard" network structures. As such the datasets has not been chosen yet.
+
+\subsection*{Methods}
+The TensorFlow implementation will be tested using a "RNN Encoder-Decoder" model. Such an RNN benefits from an "attention" mechanism. It is attention that will be made sparse using Sparsemax.
+
+\subsection*{Expected Results}
+It's expected that Sparsemax will give better performance than softmax in the settings mentioned above. The implementation is expected to be slightly slower than softmax.
+
+
+
+\end{document}
