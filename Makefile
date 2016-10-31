@@ -48,10 +48,11 @@ endif
 #
 # User friendly rules
 #
-all: square-all
-test: square-test
-lint: square-lint
+all: square-all sparsemax-all
+test: square-test sparsemax-test
+lint: square-lint sparsemax-lint
 
+include tensorflow-sparsemax/build.mk
 include tensorflow-square/build.mk
 
 clean:
