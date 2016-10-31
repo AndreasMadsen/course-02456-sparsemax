@@ -8,23 +8,23 @@
 using namespace tensorflow;
 
 REGISTER_OP("Sparsemax")
-    .Input("logits: T")
-    .Output("sparsemax: T")
-    .Attr("T: {half, float, double}")
-    .SetShapeFn([](shape_inference::InferenceContext* c) {
-      // This implements:
-      //   return shape_inference::UnchangedShapeWithRank(c, 2);
-      // which is defined in tensorflow/core/framework/common_shape_fns.h
-      // but that is not yet in the 0.11 build.
-      // Softmax uses UnchangedShapeWithRankAtLeast(c, 1) in tensorflow,
-      // but UnchangedShapeWithRank(c, 2) in it's corresponding loss function,
-      // which takes the same input. The strict version was chosen here.
-      shape_inference::ShapeHandle input;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &input));
-      c->set_output(0, input);
-      return Status::OK();
-    })
-    .Doc(R"doc(
+  .Input("logits: T")
+  .Output("sparsemax: T")
+  .Attr("T: {half, float, double}")
+  .SetShapeFn([](shape_inference::InferenceContext* c) {
+    // This implements:
+    //   return shape_inference::UnchangedShapeWithRank(c, 2);
+    // which is defined in tensorflow/core/framework/common_shape_fns.h
+    // but that is not yet in the 0.11 build.
+    // Softmax uses UnchangedShapeWithRankAtLeast(c, 1) in tensorflow,
+    // but UnchangedShapeWithRank(c, 2) in it's corresponding loss function,
+    // which takes the same input. The strict version was chosen here.
+    shape_inference::ShapeHandle input;
+    TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &input));
+    c->set_output(0, input);
+    return Status::OK();
+  })
+  .Doc(R"doc(
 Computes sparsemax activations [1].
 
 For each batch `i` and class `j` we have
@@ -47,33 +47,34 @@ class SparsemaxOp : public OpKernel {
                 errors::InvalidArgument("logits must be 2-dimensional"));
 
     // Create an output tensor
-    Tensor* prop_out = NULL;
+    Tensor* probability_out = NULL;
     OP_REQUIRES_OK(context, context->allocate_output(0, logits_in.shape(),
-                                                     &prop_out));
+                                                     &probability_out));
 
-    // define integer in matching type
+    // define integers {0, 1} in matching template type 
     T zero = static_cast<T>(0);
     T one = static_cast<T>(1);
 
     // Setup data view
     auto input = logits_in.matrix<T>();
-    auto output = prop_out->matrix<T>();
+    auto output = probability_out->matrix<T>();
 
     // get input size
     const int num_rows = input.dimension(0); // batch_size
     const int num_cols = input.dimension(1);
 
+    // create temporary vector used for sorting
+    std::vector<T> sorted_temp(num_cols);
     // calculate sparsemax for each row
-    std::vector<T> sorted(num_cols);
     for (int r = 0; r < num_rows; r++) {
 
       // copy input to temporary vector for sorting
       for (int c = 0; c < num_cols; c++) {
-        sorted[c] = input(r, c);
+        sorted_temp[c] = input(r, c);
       }
 
       // sort vector
-      std::sort(sorted.begin(), sorted.end(), std::greater<T>());
+      std::sort(sorted_temp.begin(), sorted_temp.end(), std::greater<T>());
 
       // calculate k(z), the sorted support index
       T cumsum = zero; // cumsum use for finding support k
@@ -82,13 +83,13 @@ class SparsemaxOp : public OpKernel {
       for (int c = 0; c < num_cols; c++) {
         const T k = static_cast<T>(c) + one; // the 1-indexed index
 
-        // TODO: think about if `one + k * sorted[c] > cumsum` can be true
-        // after the first is false. If not this could get a speedup by
-        // checking `one + k * sorted[c] <= cumsum` and breaking.
-        cumsum += sorted[c];
-        if (one + k * sorted[c] > cumsum) {
+        cumsum += sorted_temp[c];
+        if (one + k * sorted_temp[c] > cumsum) {
           support = k;
           cumsum_support = cumsum;
+        } else {
+          // all the remaning cases will be false - thus we break to save computation time.
+          break;
         }
       }
 
