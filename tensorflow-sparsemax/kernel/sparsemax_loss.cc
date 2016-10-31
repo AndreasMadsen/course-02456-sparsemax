@@ -10,7 +10,7 @@
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/shape_inference.h"
 
-using namespace tensorflow;
+namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
@@ -124,14 +124,14 @@ namespace functor {
 #define DECLARE_GPU_SPEC(T)                           \
   template <>                                         \
   void SparsemaxLoss<GPUDevice, T>::operator()(       \
-    const Device& d,                                  \
+    const GPUDevice& d,                               \
     typename TTypes<T>::ConstMatrix logits,           \
     typename TTypes<T>::ConstMatrix sparsemax,        \
     typename TTypes<T>::ConstMatrix labels,           \
     typename TTypes<T>::Vec losses);                  \
   extern template struct SparsemaxLoss<GPUDevice, T>;
 
-TF_CALL_half(DECLARE_GPU_SPEC);
+//TF_CALL_half(DECLARE_GPU_SPEC);
 TF_CALL_float(DECLARE_GPU_SPEC);
 TF_CALL_double(DECLARE_GPU_SPEC);
 #undef DECLARE_GPU_SPEC
@@ -143,8 +143,10 @@ TF_CALL_double(DECLARE_GPU_SPEC);
     Name("SparsemaxLoss").Device(DEVICE_GPU).TypeConstraint<T>("T"), \
     SparsemaxLossOp<GPUDevice, T>);
 
-TF_CALL_half(REGISTER_GPU);
+//TF_CALL_half(REGISTER_GPU);
 TF_CALL_float(REGISTER_GPU);
 TF_CALL_double(REGISTER_GPU);
 
 #endif  // GOOGLE_CUDA
+
+}  // namespace tensorflow
