@@ -43,28 +43,28 @@ class SparsemaxLossOp : public OpKernel {
     const Tensor& sparsemax_in = context->input(1);
     const Tensor& labels_in = context->input(2);
 
-    OP_REQUIRES(context, 
+    OP_REQUIRES(context,
                 logits_in.IsSameSize(sparsemax_in),
                 errors::InvalidArgument(
                     "logits and sparsemax must be same size: logits_size=",
                     logits_in.shape().DebugString(), " labels_size=",
                     sparsemax_in.shape().DebugString()));
 
-    OP_REQUIRES(context, 
+    OP_REQUIRES(context,
                 logits_in.IsSameSize(labels_in),
                 errors::InvalidArgument(
                     "logits and labels must be same size: logits_size=",
                     logits_in.shape().DebugString(), " labels_size=",
                     labels_in.shape().DebugString()));
 
-    OP_REQUIRES(context, 
+    OP_REQUIRES(context,
                 TensorShapeUtils::IsMatrix(logits_in.shape()),
                 errors::InvalidArgument("logits must be 2-dimensional"));
 
     // Create an output tensor (vector with batch_size elements)
     Tensor* loss_out = NULL;
-    OP_REQUIRES_OK(context, 
-                   context->allocate_output(0, TensorShape({logits_in.dim_size(0)}), 
+    OP_REQUIRES_OK(context,
+                   context->allocate_output(0, TensorShape({logits_in.dim_size(0)}),
                    &loss_out));
 
     // define 0 and 0.5 in matching template type
@@ -84,7 +84,7 @@ class SparsemaxLossOp : public OpKernel {
     // calculate loss for each row
     T loss_temp;
     for (int r = 0; r < num_rows; r++) {
-      // reset loss for each observation   
+      // reset loss for each observation
       loss_temp = zero;
 
 

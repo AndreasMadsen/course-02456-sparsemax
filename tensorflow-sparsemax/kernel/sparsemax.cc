@@ -51,7 +51,7 @@ class SparsemaxOp : public OpKernel {
     OP_REQUIRES_OK(context, context->allocate_output(0, logits_in.shape(),
                                                      &probability_out));
 
-    // define integers {0, 1} in matching template type 
+    // define integers {0, 1} in matching template type
     T zero = static_cast<T>(0);
     T one = static_cast<T>(1);
 
