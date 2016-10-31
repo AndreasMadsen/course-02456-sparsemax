@@ -14,7 +14,7 @@ static void debugprint(std::string msg) {
 __global__ void CustomSquareKernel(const int* in, const int N, int* out) {
   for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < N;
        i += blockDim.x * gridDim.x) {
-     out[i] = in[i] + 1;
+     out[i] = in[i] * in[i];
   }
 }
 
