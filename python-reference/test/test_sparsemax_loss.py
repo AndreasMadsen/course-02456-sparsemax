@@ -80,3 +80,13 @@ def test_gradient():
                 gradient_exact[i, :],
                 gradient_approx(z_i)
             )
+
+
+def test_loss_on_example():
+    """ check sparsemax-loss on a hardcoded example"""
+    twod_input = np.array([[5, 3, 7, 0], [3.6, 2.7, 3.5, 0]])
+    labels = np.array([[0, 0, 1, 0], [0, 0, 1, 0]])
+    expected_loss = np.array([0, 0.3025])
+
+    output = sparsemax_loss.forward(twod_input, labels)
+    np.testing.assert_almost_equal(expected_loss, output)
