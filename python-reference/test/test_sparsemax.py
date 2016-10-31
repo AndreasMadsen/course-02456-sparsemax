@@ -32,7 +32,7 @@ def test_sparsemax_of_inf():
     p_expected = np.zeros((100, 10))
     p_expected[np.arange(0, 100), z_sort_arg[:, 0]] = 1
 
-    np.testing.assert_array_equal(
+    np.testing.assert_almost_equal(
         sparsemax.forward((1/epsilon) * z),
         p_expected
     )
@@ -76,7 +76,7 @@ def test_diffrence():
                     continue
 
                 assert_true(
-                    0 <= p[val, j] - p[val, i] <= z[val, j] - z[val, i],
+                    0 <= p[val, j] - p[val, i] <= z[val, j] - z[val, i] + 1e-9,
                     "0 <= %.10f <= %.10f" % (
                         p[val, j] - p[val, i], z[val, j] - z[val, i]
                     )
