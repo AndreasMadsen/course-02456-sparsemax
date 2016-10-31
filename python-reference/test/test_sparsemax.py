@@ -130,3 +130,14 @@ def test_Rop():
         np.einsum('oij,oi->oj', jacobian_exact, v),  # J(z) * v for each obs.
         sparsemax.Rop(z, v)
     )
+
+
+def test_sparsemax_on_examples():
+    """ check sparsemax on a harcoded examples"""
+    twod_input_vector = np.array([[5, 3, 0], [2, 2.7, 0]])
+    value_expected = np.array([[1, 0, 0],
+                              [((2 + 1) - 2.7) / 2,
+                               ((2.7 + 1) - 2) / 2, 0]])
+
+    output_value = sparsemax.forward(twod_input_vector)
+    np.testing.assert_almost_equal(output_value, value_expected)
