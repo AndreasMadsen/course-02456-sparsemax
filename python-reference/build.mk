@@ -6,4 +6,4 @@ reference-test:
 	nosetests -v -s python-reference/test/test_*.py
 
 reference-lint:
-	pep8 --show-source --show-pep8 ./
+	pep8 --show-source --show-pep8 python-reference/
