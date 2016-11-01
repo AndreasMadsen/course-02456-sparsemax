@@ -1,6 +1,8 @@
 
 # sparsemax targets
-tensorflow-sparsemax/kernel/sparsemax.so: tensorflow-sparsemax/kernel/sparsemax.o
+tensorflow-sparsemax/kernel/sparsemax.so: tensorflow-sparsemax/kernel/sparsemax.o tensorflow-sparsemax/kernel/sparsemax_functor.o
+
+tensorflow-sparsemax/kernel/sparsemax_functor.o: tensorflow-sparsemax/kernel/sparsemax_functor.cc tensorflow-sparsemax/kernel/sparsemax_functor.h
 
 tensorflow-sparsemax/kernel/sparsemax_loss.so: tensorflow-sparsemax/kernel/sparsemax_loss.o tensorflow-sparsemax/kernel/sparsemax_loss.cu.o
 
