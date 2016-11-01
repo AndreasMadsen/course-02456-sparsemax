@@ -52,7 +52,8 @@ struct Sparsemax<CPUDevice, T> {
           support = k;
           cumsum_support = cumsum;
         } else {
-          // all the remaning cases will be false - thus we break to save computation time.
+          // All the remaning cases will be false, thus we break to save
+          // computation time.
           break;
         }
       }
