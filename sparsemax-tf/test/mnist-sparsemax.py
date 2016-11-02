@@ -3,7 +3,6 @@ import argparse
 
 # Import data
 from tensorflow.examples.tutorials.mnist import input_data
-from tensorflow.python.framework import ops # Used to define own op
 
 import tensorflow as tf
 import numpy as np
