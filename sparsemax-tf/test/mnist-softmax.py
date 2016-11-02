@@ -58,7 +58,7 @@ def main(_):
   with tf.Session() as sess:
     # Train
     tf.initialize_all_variables().run()
-    for _ in range(100):
+    for _ in range(1000):
       batch_xs, batch_ys = mnist.train.next_batch(100)
       sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
@@ -69,13 +69,8 @@ def main(_):
     print(sess.run(accuracy, feed_dict={x: mnist.test.images,
                                         y_: mnist.test.labels}))
 
-    print("Some outputs for understanding...")
-    print("Cross-entropy: ")
-    print(cross_entropy.eval(feed_dict={x: mnist.test.images,
-                                        y_: mnist.test.labels}))
 
 if __name__ == '__main__':
-  print("BUAHAA")
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str, default='/tmp/data',
                       help='Directory for storing data')

@@ -3,7 +3,7 @@ import numpy as np
 import sparsemax
 
 
-def forward(z, q):
+def forward_loss(z, spm, q):
     """Calculates the sparsemax loss function
     this will process a 2d-array $z$, where axis 1 (each row) is assumed to be
     the the z-vector. q is a binary matrix of same shape, containing the labels
@@ -13,7 +13,7 @@ def forward(z, q):
     z_k = np.sum(q * z, axis=1)
 
     # calculate sum over S(z)
-    p = sparsemax.forward(z)
+    p = spm
     s = p > 0
     # z_i^2 - tau(z)^2 = p_i (2 * z_i - p_i) for i \in S(z)
     S_sum = np.sum(s * p * (2 * z - p), axis=1)
