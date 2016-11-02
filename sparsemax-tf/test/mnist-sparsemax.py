@@ -7,9 +7,6 @@ from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import numpy as np
 
-
-import sparsemax
-import sparsemax_loss
 import sparsemax_tf_ops
 
 
@@ -18,7 +15,6 @@ FLAGS = None
 
 def main(_):
 	mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
-
 
 	# Create the model
 	x = tf.placeholder(tf.float64, [None, 784], name="input.x")
@@ -29,10 +25,9 @@ def main(_):
 	# Define loss and optimizer
 	y_ = tf.placeholder(tf.float64, [None, 10])
 
-
 	spm = sparsemax_tf_ops.sparsemax_op(y)
-	cross_entropy = tf.reduce_mean(sparsemax_tf_ops.sparsemax_loss_op(y, spm, y_))
-	train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+	sparsemax_loss = tf.reduce_mean(sparsemax_tf_ops.sparsemax_loss_op(y, spm, y_))
+	train_step = tf.train.GradientDescentOptimizer(0.5).minimize(sparsemax_loss)
 
 	with tf.Session() as sess:
 		# Train
