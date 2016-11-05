@@ -131,7 +131,7 @@ namespace functor {
     typename TTypes<T>::Vec losses);                  \
   extern template struct SparsemaxLoss<GPUDevice, T>;
 
-//TF_CALL_half(DECLARE_GPU_SPEC);
+TF_CALL_half(DECLARE_GPU_SPEC);
 TF_CALL_float(DECLARE_GPU_SPEC);
 TF_CALL_double(DECLARE_GPU_SPEC);
 #undef DECLARE_GPU_SPEC
@@ -143,7 +143,7 @@ TF_CALL_double(DECLARE_GPU_SPEC);
     Name("SparsemaxLoss").Device(DEVICE_GPU).TypeConstraint<T>("T"), \
     SparsemaxLossOp<GPUDevice, T>);
 
-//TF_CALL_half(REGISTER_GPU);
+TF_CALL_half(REGISTER_GPU);
 TF_CALL_float(REGISTER_GPU);
 TF_CALL_double(REGISTER_GPU);
 
