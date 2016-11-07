@@ -12,7 +12,7 @@ NVCC=nvcc
 CXX=g++
 CXXFLAGS=-std=c++11
 CFLAGS=-fPIC -O2 -Wall -Wextra
-NVCCFLAGS=-x cu -Xcompiler -fPIC -Xcompiler -Wall -Xcompiler -Wextra
+NVCCFLAGS=-x cu -arch compute_35 -Xcompiler -fPIC -Xcompiler -Wall -Xcompiler -Wextra
 CPPFLAGS=-isystem $(shell python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())') -D_GLIBCXX_USE_CXX11_ABI=0
 LDFLAGS=
 

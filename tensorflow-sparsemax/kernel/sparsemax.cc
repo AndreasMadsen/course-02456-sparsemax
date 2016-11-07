@@ -1,3 +1,6 @@
+
+#include "sparsemax_functor.h"
+
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
@@ -6,6 +9,9 @@
 #include <algorithm>
 
 using namespace tensorflow;
+
+typedef Eigen::ThreadPoolDevice CPUDevice;
+typedef Eigen::GpuDevice GPUDevice;
 
 REGISTER_OP("Sparsemax")
   .Input("logits: T")
@@ -35,7 +41,7 @@ For each batch `i` and class `j` we have
 
 )doc");
 
-template <typename T>
+template <typename Device, typename T>
 class SparsemaxOp : public OpKernel {
  public:
   explicit SparsemaxOp(OpKernelConstruction* context) : OpKernel(context) {}
@@ -51,65 +57,34 @@ class SparsemaxOp : public OpKernel {
     OP_REQUIRES_OK(context, context->allocate_output(0, logits_in.shape(),
                                                      &probability_out));
 
-    // define integers {0, 1} in matching template type
-    T zero = static_cast<T>(0);
-    T one = static_cast<T>(1);
-
     // Setup data view
     auto input = logits_in.matrix<T>();
     auto output = probability_out->matrix<T>();
 
-    // get input size
-    const int num_rows = input.dimension(0); // batch_size
-    const int num_cols = input.dimension(1);
-
-    // create temporary vector used for sorting
-    std::vector<T> sorted_temp(num_cols);
-    // calculate sparsemax for each row
-    for (int r = 0; r < num_rows; r++) {
-
-      // copy input to temporary vector for sorting
-      for (int c = 0; c < num_cols; c++) {
-        sorted_temp[c] = input(r, c);
-      }
-
-      // sort vector
-      std::sort(sorted_temp.begin(), sorted_temp.end(), std::greater<T>());
-
-      // calculate k(z), the sorted support index
-      T cumsum = zero; // cumsum use for finding support k
-      T support = zero; // k
-      T cumsum_support = zero; // cumsum for support i <= k
-      for (int c = 0; c < num_cols; c++) {
-        const T k = static_cast<T>(c) + one; // the 1-indexed index
-
-        cumsum += sorted_temp[c];
-        if (one + k * sorted_temp[c] > cumsum) {
-          support = k;
-          cumsum_support = cumsum;
-        } else {
-          // all the remaning cases will be false - thus we break to save computation time.
-          break;
-        }
-      }
-
-      // calculate tau(z)
-      const T tau = (cumsum_support - one) / support;
-
-      // calculate properbility and copy to output
-      for (int c = 0; c < num_cols; c++) {
-        output(r, c) = std::max(input(r, c) - tau, zero);
-      }
-    }
+    functor::Sparsemax<Device, T>()(input, output);
   }
 };
 
 #define REGISTER_CPU(T) REGISTER_KERNEL_BUILDER(                 \
     Name("Sparsemax").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
-    SparsemaxOp<T>);
+    SparsemaxOp<CPUDevice, T>);
 
 TF_CALL_half(REGISTER_CPU);
 TF_CALL_float(REGISTER_CPU);
 TF_CALL_double(REGISTER_CPU);
 
 #undef REGISTER_CPU
+
+#if GOOGLE_CUDA
+
+#define REGISTER_GPU(T) REGISTER_KERNEL_BUILDER(                 \
+    Name("Sparsemax").Device(DEVICE_GPU).TypeConstraint<T>("T"), \
+    SparsemaxOp<GPUDevice, T>);
+
+TF_CALL_half(REGISTER_GPU);
+TF_CALL_float(REGISTER_GPU);
+TF_CALL_double(REGISTER_GPU);
+
+#undef REGISTER_GPU
+
+#endif  // GOOGLE_CUDA
