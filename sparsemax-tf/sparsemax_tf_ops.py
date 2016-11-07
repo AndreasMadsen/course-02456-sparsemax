@@ -6,8 +6,6 @@ from tensorflow.python.framework import ops
 import sparsemax
 import sparsemax_loss
 
-tf.logging.set_verbosity(tf.logging.ERROR)
-
 def py_func(func, inp, Tout, stateful=True, name=None, grad=None):
 	# Need to generate a unique name to avoid duplicates:
 	rnd_name = 'PyFuncGrad' + str(np.random.randint(0, 1E+8))
@@ -20,7 +18,7 @@ def py_func(func, inp, Tout, stateful=True, name=None, grad=None):
 
 def grad_sparsemax(op, grad):
 	spm = op.outputs[0]
-	support = tf.cast(sparsemax > 0, sparsemax.dtype)
+	support = tf.cast(spm > 0, spm.dtype)
 
 	# Calculate \hat{v}, which will be a vector (scalar for each z)
 	v_hat = tf.reduce_sum(tf.mul(grad, support), 1) / tf.reduce_sum(support, 1)
@@ -35,8 +33,7 @@ def grad_sparsemax_loss(op, grad):
 	return [result, None, None]
 
 def sparsemax_op(Z, name=None):
-	with ops.op_scope([Z], name, "SparseMaxGrad") as name:
-
+	with tf.name_scope(name, "SparseMaxGrad",[Z]) as name:
 		# py_func takes a list of tensors and a function that takes np arrays as inputs
 		# and returns np arrays as outputs
 		sparsemax_forward = py_func(sparsemax.forward,
@@ -49,8 +46,7 @@ def sparsemax_op(Z, name=None):
 
 
 def sparsemax_loss_op(Z, sparsemax, q, name=None):
-	with ops.op_scope([Z, sparsemax, q], name, "SparseMaxLossGrad") as name:
-
+	with tf.name_scope(name, "SparseMaxLossGrad",[Z, sparsemax, q]) as name:
 		# py_func takes a list of tensors and a function that takes np arrays as inputs
 		# and returns np arrays as outputs
 		sparsemax_forward_loss = py_func(sparsemax_loss.forward_loss,
