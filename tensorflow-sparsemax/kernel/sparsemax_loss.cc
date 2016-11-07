@@ -97,7 +97,7 @@ class SparsemaxLossOp : public OpKernel {
 };
 
 //
-// A bit part this design patter was taken from
+// A part of this design pattern was taken from
 // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/batch_norm_op.cc
 //
 

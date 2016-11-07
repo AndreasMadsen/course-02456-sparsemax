@@ -52,7 +52,7 @@ struct Sparsemax<CPUDevice, T> {
           support = k;
           cumsum_support = cumsum;
         } else {
-          // All the remaning cases will be false, thus we break to save
+          // All the remaining cases will be false, thus we break to save
           // computation time.
           break;
         }
@@ -61,7 +61,7 @@ struct Sparsemax<CPUDevice, T> {
       // calculate tau(z)
       const T tau = (cumsum_support - one) / support;
 
-      // calculate properbility and copy to output
+      // calculate sparse probability and copy it to the output
       for (int c = 0; c < num_cols; c++) {
         output(r, c) = std::max(input(r, c) - tau, zero);
       }

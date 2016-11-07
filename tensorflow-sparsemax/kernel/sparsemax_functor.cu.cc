@@ -32,14 +32,16 @@ __global__ void SparsemaxKernel(const T* in,
     T inf = static_cast<T>(CUDART_INF);
 
     // get the row array. This assumes row major data ordering, but that
-    // is the default in tensorflow.
+    // is the default in tensorflow anyway.
     const T* in_row = &in[row_id * num_cols];
     T* out_row = &out[row_id * num_cols];
 
-    // calculate k(z), by simouthouse sorting and cumsum
+    // calculate k(z), by simultaneously sorting and computing cumsum
+    
     // temporary variables used for online sorting
     T sorted_z_at_c_prev = inf;
     int sorted_i_at_c_prev = 0;
+    
     // support variables
     T cumsum = zero; // cumsum use for finding support k
     T support = zero; // k
@@ -52,7 +54,8 @@ __global__ void SparsemaxKernel(const T* in,
       T sorted_z_at_c = -inf;
       int sorted_i_at_c = -1;
       for (int i = 0; i < num_cols; i++) {
-        // the the value is the same, just ensure that the index increased
+        // if the two values are equal value:
+        // we only need to increase the index
         if (in_row[i] == sorted_z_at_c_prev && i > sorted_i_at_c_prev) {
           sorted_z_at_c = in_row[i];
           sorted_i_at_c = i;
@@ -62,13 +65,13 @@ __global__ void SparsemaxKernel(const T* in,
         }
 
         // if the value decreased, consider it. If it's greater than what
-        // was previusely considered, update.
+        // was previously considered, update.
         if (in_row[i] < sorted_z_at_c_prev && in_row[i] > sorted_z_at_c) {
           sorted_z_at_c = in_row[i];
           sorted_i_at_c = i;
         }
       }
-      // prepear for next iteration
+      // prepare for next iteration
       sorted_z_at_c_prev = sorted_z_at_c;
       sorted_i_at_c_prev = sorted_i_at_c;
 
@@ -78,7 +81,7 @@ __global__ void SparsemaxKernel(const T* in,
         support = k;
         cumsum_support = cumsum;
       } else {
-        // All the remaning cases will be false, thus we break to save
+        // All the remaining cases will be false, thus we break to save
         // computation time.
         break;
       }
@@ -87,7 +90,7 @@ __global__ void SparsemaxKernel(const T* in,
     // calculate tau(z)
     const T tau = (cumsum_support - one) / support;
 
-    // calculate properbility and copy to output
+    // calculate probability and copy to output
     for (int c = 0; c < num_cols; c++) {
       out_row[c] = max(in_row[c] - tau, zero);
     }
