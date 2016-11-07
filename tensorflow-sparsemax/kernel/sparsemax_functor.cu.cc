@@ -19,6 +19,57 @@ typedef Eigen::GpuDevice GPUDevice;
 
 namespace functor {
 
+
+// bitonic sort
+template <typename T>
+__global__ void bitonic_sort_step(T *dev_values, int j, int k)
+{
+  unsigned int i, ixj; /* Sorting partners: i and ixj */
+  i = threadIdx.x + blockDim.x * blockIdx.x;
+  ixj = i^j;
+
+  /* The threads with the lowest ids sort the array. */
+  if ((ixj)>i) {
+    if ((i&k)==0) {
+      /* Sort ascending */
+      if (dev_values[i]>dev_values[ixj]) {
+        /* exchange(i,ixj); */
+        T temp = dev_values[i];
+        dev_values[i] = dev_values[ixj];
+        dev_values[ixj] = temp;
+      }
+    }
+    if ((i&k)!=0) {
+      /* Sort descending */
+      if (dev_values[i]<dev_values[ixj]) {
+        /* exchange(i,ixj); */
+        T temp = dev_values[i];
+        dev_values[i] = dev_values[ixj];
+        dev_values[ixj] = temp;
+      }
+    }
+  }
+}
+
+template <typename T>
+void bitonic_sort(T *values, int size_matrix)
+{
+  const int threads_per_block = 256;
+  const int blocks = static_cast<int>(std::ceil(
+      static_cast<double>(size_matrix) / static_cast<double>(threads_per_block)));
+  
+  int j, k;
+  /* Major step */
+  for (k = 2; k <= size_matrix; k <<= 1) {
+    /* Minor step */
+    for (j=k>>1; j>0; j=j>>1) {
+      bitonic_sort_step<T><<<blocks, threads_per_block>>>(values, j, k);
+    }
+  }
+} 
+
+
+
 template <typename T>
 __global__ void SparsemaxKernel(const T* in,
                                 const int num_rows,
@@ -100,6 +151,7 @@ __global__ void SparsemaxKernel(const T* in,
 template <typename T>
 struct Sparsemax<GPUDevice, T> {
   void operator()(typename TTypes<T>::ConstMatrix input,
+                  typename TTypes<T>::Matrix temp_sorted,
                   typename TTypes<T>::Matrix output) {
 
     const int num_rows = input.dimension(0); // batch_size
@@ -110,10 +162,18 @@ struct Sparsemax<GPUDevice, T> {
       static_cast<double>(num_rows) / static_cast<double>(threads_pr_block)
     ));
 
+    /*
     SparsemaxKernel<T><<<blocks, threads_pr_block>>>(input.data(),
                                                      num_rows,
                                                      num_cols,
                                                      output.data());
+    */
+
+    cudaMemcpy(temp_sorted.data(), input.data(),
+               num_rows * num_cols * sizeof(T), 
+               cudaMemcpyDeviceToDevice);
+    bitonic_sort(temp_sorted.data(), num_rows * num_cols);
+    cudaMemcpy(output.data(), temp_sorted.data(), num_rows * num_cols * sizeof(T), cudaMemcpyDeviceToDevice);    
   }
 };
 

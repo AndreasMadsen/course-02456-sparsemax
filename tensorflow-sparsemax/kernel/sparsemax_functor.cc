@@ -18,6 +18,7 @@ namespace functor {
 template <typename T>
 struct Sparsemax<CPUDevice, T> {
   void operator()(typename TTypes<T>::ConstMatrix input,
+                  typename TTypes<T>::Matrix unused_sorted, //only used for GPU
                   typename TTypes<T>::Matrix output) {
 
     // define integers {0, 1} in matching template type
