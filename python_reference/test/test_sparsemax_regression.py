@@ -35,7 +35,7 @@ class ModelTest:
         t_test = self.t[test_index, :]
 
         # reset model
-        self.model.reset(random_state=self.random_state)
+        self.model.reset()
 
         # train model
         for epoch in range(0, self.epochs):
@@ -82,7 +82,8 @@ def test_iris_classifier():
     # intialize model
     model = SparsemaxRegression(
         input_size=4, output_size=3,
-        regualizer=1e-1, learning_rate=1e-2
+        regualizer=1e-1, learning_rate=1e-2,
+        random_state=42
     )
 
     # setup model tester
@@ -99,7 +100,8 @@ def test_mnist_classifier():
     # intialize model
     model = SparsemaxRegression(
         input_size=mnist.data.shape[1], output_size=10,
-        regualizer=1e-1, learning_rate=1e-2
+        regualizer=1e-1, learning_rate=1e-2,
+        random_state=42
     )
 
     # setup model tester

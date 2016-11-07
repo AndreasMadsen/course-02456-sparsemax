@@ -1,6 +1,5 @@
 import _test
 from nose.tools import *
-
 import operator
 import tensorflow as tf
 import numpy as np

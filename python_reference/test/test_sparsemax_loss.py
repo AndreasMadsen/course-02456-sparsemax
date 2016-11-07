@@ -6,8 +6,8 @@ import operator
 import numpy as np
 import numdifftools
 
-import sparsemax
 import sparsemax_loss
+import sparsemax
 
 
 def test_constant_add():
