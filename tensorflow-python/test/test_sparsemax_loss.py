@@ -5,12 +5,12 @@ import operator
 import tensorflow as tf
 import numpy as np
 
-import sparsemax_tf_ops
+import sparsemax_tf_ops as ops
 
 
 def sparsemax(z):
     logits = tf.placeholder(tf.float64, name='z')
-    sparsemax = sparsemax_tf_ops.sparsemax_op(logits)
+    sparsemax = ops.sparsemax_op(logits)
 
     with tf.Session() as sess:
         return sparsemax.eval({logits: z})
@@ -19,8 +19,8 @@ def sparsemax(z):
 def sparsemax_loss(z, q):
     logits = tf.placeholder(tf.float64, name='z')
     labels = tf.placeholder(tf.float64, name='q')
-    sparsemax = sparsemax_tf_ops.sparsemax_op(logits)
-    loss = sparsemax_tf_ops.sparsemax_loss_op(logits, sparsemax, labels)
+    sparsemax = ops.sparsemax_op(logits)
+    loss = ops.sparsemax_loss_op(logits, sparsemax, labels)
 
     with tf.Session() as sess:
         return loss.eval({logits: z, labels: q})
@@ -80,14 +80,14 @@ def test_Rop_estimated():
 
     logits = tf.placeholder(tf.float64, name='z')
     labels = tf.constant(q, name='q')
-    sparsemax = sparsemax_tf_ops.sparsemax_op(logits)
-    loss = sparsemax_tf_ops.sparsemax_loss_op(logits, sparsemax, labels)
+    sparsemax = ops.sparsemax_op(logits)
+    loss = ops.sparsemax_loss_op(logits, sparsemax, labels)
 
     with tf.Session() as sess:
         # https://www.tensorflow.org/versions/r0.8/api_docs/python/test.html
         analytical, numerical = tf.test.compute_gradient(
             logits, z.shape,
-            sparsemax_tf_ops.sparsemax_loss_op(logits, sparsemax, labels), (100, ),
+            ops.sparsemax_loss_op(logits, sparsemax, labels), (100, ),
             x_init_value=z, delta=1e-9
         )
 
@@ -106,8 +106,8 @@ def test_Rop_numpy():
 
     logits = tf.placeholder(tf.float64, name='z')
     labels = tf.placeholder(tf.float64, name='q')
-    sparsemax = sparsemax_tf_ops.sparsemax_op(logits)
-    loss = sparsemax_tf_ops.sparsemax_loss_op(logits, sparsemax, labels)
+    sparsemax = ops.sparsemax_op(logits)
+    loss = ops.sparsemax_loss_op(logits, sparsemax, labels)
     grad = tf.gradients(loss, [logits])[0]
 
     with tf.Session() as sess:

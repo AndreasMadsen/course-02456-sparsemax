@@ -41,7 +41,7 @@ def test_sparsemax_of_inf():
     p_expected[np.arange(0, 100), z_sort_arg[:, 0]] = 1
 
     np.testing.assert_almost_equal(
-        sparsemax((1/epsilon) * z),
+        sparsemax((1 / epsilon) * z),
         p_expected
     )
 
@@ -162,4 +162,4 @@ def test_Rop_numpy():
         np.testing.assert_almost_equal(
             sparsemax_transform_grad.eval({logits: z}),
             numpy_grad
-            )
+        )
