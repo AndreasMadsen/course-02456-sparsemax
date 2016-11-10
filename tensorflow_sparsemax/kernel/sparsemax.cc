@@ -57,11 +57,17 @@ class SparsemaxOp : public OpKernel {
     OP_REQUIRES_OK(context, context->allocate_output(0, logits_in.shape(),
                                                      &probability_out));
 
+    // Create temporary tensor used for storing bitonic sort
+    Tensor temp_sorted;
+    OP_REQUIRES_OK(context, context->allocate_temp(DataTypeToEnum<T>::value,
+                                                   logits_in.shape(), &temp_sorted));
+
     // Setup data view
     auto input = logits_in.matrix<T>();
+    auto sorted = temp_sorted.matrix<T>();
     auto output = probability_out->matrix<T>();
 
-    functor::Sparsemax<Device, T>()(input, output);
+    functor::Sparsemax<Device, T>()(input, sorted, output);
   }
 };
 

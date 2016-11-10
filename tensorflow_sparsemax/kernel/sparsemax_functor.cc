@@ -15,10 +15,14 @@ typedef Eigen::GpuDevice GPUDevice;
 
 namespace functor {
 
+#define UNUSED(x) (void)(x)
+
 template <typename T>
 struct Sparsemax<CPUDevice, T> {
   void operator()(typename TTypes<T>::ConstMatrix input,
+                  typename TTypes<T>::Matrix sorted_unused, //only used for GPU
                   typename TTypes<T>::Matrix output) {
+    UNUSED(sorted_unused); // remove unused warning
 
     // define integers {0, 1} in matching template type
     T zero = static_cast<T>(0);

@@ -19,6 +19,63 @@ typedef Eigen::GpuDevice GPUDevice;
 
 namespace functor {
 
+#define anyswap(T, A,B) {T temp=A;A=B;B=temp;}
+
+template <typename T>
+__global__ void odd_even_sort_kernel(T *sorted,
+                                     const int num_rows,
+                                     const int num_cols,
+                                     const int iterations) {
+  int col_index = blockIdx.x * blockDim.x + threadIdx.x;
+  int row_index = blockIdx.y;
+
+  T* sorted_row = &sorted[row_index * num_cols];
+
+  for(int i = 0; i < iterations; i++) {
+    //even phase
+    if (!(col_index & 1) && col_index < (num_cols - 1)) {
+        if (sorted_row[col_index] < sorted_row[col_index + 1]) {
+          T temp = sorted_row[col_index];
+          sorted_row[col_index] = sorted_row[col_index + 1];
+          sorted_row[col_index + 1] = temp;
+        }
+    }
+    __syncthreads();
+
+    //odd phase
+    if ((col_index & 1) && col_index < (num_cols - 1)) {
+        if (sorted_row[col_index] < sorted_row[col_index + 1]) {
+          T temp = sorted_row[col_index];
+          sorted_row[col_index] = sorted_row[col_index + 1];
+          sorted_row[col_index + 1] = temp;
+        }
+    }
+    __syncthreads();
+  }
+}
+
+template <typename T>
+void odd_even_sort(typename TTypes<T>::Matrix sorted,
+                   const int num_rows,
+                   const int num_cols) {
+  // calculate paramization constants
+  const int col_threads_per_block = 256;
+  const int col_blocks = static_cast<int>(std::ceil(
+   static_cast<double>(num_cols) / static_cast<double>(col_threads_per_block)
+  ));
+
+  dim3 threads_per_block(col_threads_per_block, 1, 1);
+  dim3 blocks(col_blocks, num_rows, 1);
+
+  // calculate number of odd-even iterations
+  const int iterations = (num_cols % 2 == 0) ? num_cols/2 : (num_cols/2)+1;
+
+  // launch kernel
+  odd_even_sort_kernel<T><<<blocks, threads_per_block>>>(
+    sorted.data(), num_rows, num_cols, iterations
+  );
+}
+
 template <typename T>
 __global__ void SparsemaxKernel(const T* in,
                                 const int num_rows,
@@ -37,11 +94,11 @@ __global__ void SparsemaxKernel(const T* in,
     T* out_row = &out[row_id * num_cols];
 
     // calculate k(z), by simultaneously sorting and computing cumsum
-    
+
     // temporary variables used for online sorting
     T sorted_z_at_c_prev = inf;
     int sorted_i_at_c_prev = 0;
-    
+
     // support variables
     T cumsum = zero; // cumsum use for finding support k
     T support = zero; // k
@@ -97,23 +154,23 @@ __global__ void SparsemaxKernel(const T* in,
   }
 }
 
+#define UNUSED(x) (void)(x)
+
 template <typename T>
 struct Sparsemax<GPUDevice, T> {
   void operator()(typename TTypes<T>::ConstMatrix input,
+                  typename TTypes<T>::Matrix sorted,
                   typename TTypes<T>::Matrix output) {
+    UNUSED(sorted);
 
     const int num_rows = input.dimension(0); // batch_size
     const int num_cols = input.dimension(1);
 
-    const int threads_pr_block = 256;
-    const int blocks = static_cast<int>(std::ceil(
-      static_cast<double>(num_rows) / static_cast<double>(threads_pr_block)
-    ));
-
-    SparsemaxKernel<T><<<blocks, threads_pr_block>>>(input.data(),
-                                                     num_rows,
-                                                     num_cols,
-                                                     output.data());
+    // Move input to sorted (temp), and sort inplace
+    cudaMemcpy(output.data(), input.data(),
+               num_rows * num_cols * sizeof(T),
+               cudaMemcpyDeviceToDevice);
+    odd_even_sort<T>(output, num_rows, num_cols);
   }
 };
 
