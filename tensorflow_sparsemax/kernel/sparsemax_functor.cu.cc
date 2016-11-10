@@ -4,6 +4,7 @@
 
 #include "sparsemax_functor.h"
 
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
@@ -26,8 +27,8 @@ __global__ void odd_even_sort_kernel(T *sorted,
                                      const int num_rows,
                                      const int num_cols,
                                      const int iterations) {
-  int col_index = blockIdx.x * blockDim.x + threadIdx.x;
-  int row_index = blockIdx.y;
+  const int col_index = blockIdx.x * blockDim.x + threadIdx.x;
+  const int row_index = blockIdx.y;
 
   T* sorted_row = &sorted[row_index * num_cols];
 
@@ -77,100 +78,164 @@ void odd_even_sort(typename TTypes<T>::Matrix sorted,
 }
 
 template <typename T>
-__global__ void SparsemaxKernel(const T* in,
-                                const int num_rows,
-                                const int num_cols,
-                                T* out) {
-  int row_id = blockIdx.x * blockDim.x + threadIdx.x;
-  if (row_id < num_rows) {
-    // define integers {0, 1} in matching template type
-    T zero = static_cast<T>(0);
-    T one = static_cast<T>(1);
-    T inf = static_cast<T>(CUDART_INF);
+__global__ void support_threshold_kernel(const T* cumsum,
+                                         const int num_rows,
+                                         const int num_cols,
+                                         T* sorted) {
+  const int col_index = blockIdx.x * blockDim.x + threadIdx.x;
+  const int row_index = blockIdx.y;
 
-    // get the row array. This assumes row major data ordering, but that
-    // is the default in tensorflow anyway.
-    const T* in_row = &in[row_id * num_cols];
-    T* out_row = &out[row_id * num_cols];
+  const T* cumsum_row = &cumsum[row_index * num_cols];
+  T* sorted_row = &sorted[row_index * num_cols];
 
-    // calculate k(z), by simultaneously sorting and computing cumsum
+  const T one = static_cast<T>(1);
 
-    // temporary variables used for online sorting
-    T sorted_z_at_c_prev = inf;
-    int sorted_i_at_c_prev = 0;
-
-    // support variables
-    T cumsum = zero; // cumsum use for finding support k
-    T support = zero; // k
-    T cumsum_support = zero; // cumsum for support i <= k
-
-    for (int c = 0; c < num_cols; c++) {
-      const T k = static_cast<T>(c) + one; // the 1-indexed index
-
-      // online bubble sort, get the next item in the sorted vector z
-      T sorted_z_at_c = -inf;
-      int sorted_i_at_c = -1;
-      for (int i = 0; i < num_cols; i++) {
-        // if the two values are equal value:
-        // we only need to increase the index
-        if (in_row[i] == sorted_z_at_c_prev && i > sorted_i_at_c_prev) {
-          sorted_z_at_c = in_row[i];
-          sorted_i_at_c = i;
-          // also stop early, to prevent the index from increasing more
-          // than required.
-          break;
-        }
-
-        // if the value decreased, consider it. If it's greater than what
-        // was previously considered, update.
-        if (in_row[i] < sorted_z_at_c_prev && in_row[i] > sorted_z_at_c) {
-          sorted_z_at_c = in_row[i];
-          sorted_i_at_c = i;
-        }
-      }
-      // prepare for next iteration
-      sorted_z_at_c_prev = sorted_z_at_c;
-      sorted_i_at_c_prev = sorted_i_at_c;
-
-      // calculate k(z), the sorted support index
-      cumsum += sorted_z_at_c;
-      if (one + k * sorted_z_at_c > cumsum) {
-        support = k;
-        cumsum_support = cumsum;
-      } else {
-        // All the remaining cases will be false, thus we break to save
-        // computation time.
-        break;
-      }
-    }
-
-    // calculate tau(z)
-    const T tau = (cumsum_support - one) / support;
-
-    // calculate probability and copy to output
-    for (int c = 0; c < num_cols; c++) {
-      out_row[c] = max(in_row[c] - tau, zero);
-    }
+  if (col_index < num_cols) {
+    const T k = static_cast<T>(col_index + 1);
+    sorted_row[col_index] = static_cast<T>(
+      one + k * sorted_row[col_index] > cumsum_row[col_index]
+    );
   }
 }
 
-#define UNUSED(x) (void)(x)
+template <typename T>
+void support_threshold(typename TTypes<T>::Matrix cumsum,
+                       const int num_rows,
+                       const int num_cols,
+                       typename TTypes<T>::Matrix sorted) {
+   // calculate paramization constants
+   const int col_threads_per_block = 256;
+   const int col_blocks = static_cast<int>(std::ceil(
+    static_cast<double>(num_cols) / static_cast<double>(col_threads_per_block)
+   ));
+
+   dim3 threads_per_block(col_threads_per_block, 1, 1);
+   dim3 blocks(col_blocks, num_rows, 1);
+
+   // launch kernel
+   support_threshold_kernel<T><<<blocks, threads_per_block>>>(
+     cumsum.data(), num_rows, num_cols, sorted.data()
+   );
+}
+
+template <typename T>
+__global__ void calculate_tau_kernel(const T* cumsum,
+                                     const int num_rows,
+                                     const int num_cols,
+                                     T* support) {
+  const int row_index = blockIdx.x * blockDim.x + threadIdx.x;
+
+  const T one = static_cast<T>(1);
+
+  if (row_index < num_rows) {
+    const int support_index = static_cast<int>(support[row_index]) - 1;
+    const T cumsum_value = cumsum[row_index * num_cols + support_index];
+    support[row_index] = (cumsum_value - one) / support[row_index];
+  }
+}
+
+template <typename T>
+void calculate_tau(typename TTypes<T>::Matrix cumsum,
+                   const int num_rows,
+                   const int num_cols,
+                   typename TTypes<T>::Matrix support) {
+   // calculate paramization constants
+   const int threads_per_block = 256;
+   const int blocks = static_cast<int>(std::ceil(
+    static_cast<double>(num_rows) / static_cast<double>(threads_per_block)
+   ));
+
+   // launch kernel
+   calculate_tau_kernel<T><<<blocks, threads_per_block>>>(
+     cumsum.data(), num_rows, num_cols, support.data()
+   );
+}
+
+template <typename T>
+__global__ void calculate_properbility_kernel(const T* input,
+                                              const T* tau,
+                                              const int num_rows,
+                                              const int num_cols,
+                                              T* output) {
+  const int col_index = blockIdx.x * blockDim.x + threadIdx.x;
+  const int row_index = blockIdx.y;
+
+  T zero = static_cast<T>(0);
+
+  if (col_index < num_cols) {
+    const int flat_index = row_index * num_cols + col_index;
+    output[flat_index] = max(input[flat_index] - tau[row_index], zero);
+  }
+}
+
+template <typename T>
+void calculate_properbility(typename TTypes<T>::ConstMatrix input,
+                            typename TTypes<T>::Matrix tau,
+                            const int num_rows,
+                            const int num_cols,
+                            typename TTypes<T>::Matrix output) {
+  // calculate paramization constants
+  const int col_threads_per_block = 256;
+  const int col_blocks = static_cast<int>(std::ceil(
+   static_cast<double>(num_cols) / static_cast<double>(col_threads_per_block)
+  ));
+
+  dim3 threads_per_block(col_threads_per_block, 1, 1);
+  dim3 blocks(col_blocks, num_rows, 1);
+
+  // launch kernel
+  calculate_properbility_kernel<T><<<blocks, threads_per_block>>>(
+    input.data(), tau.data(), num_rows, num_cols, output.data()
+  );
+}
 
 template <typename T>
 struct Sparsemax<GPUDevice, T> {
-  void operator()(typename TTypes<T>::ConstMatrix input,
-                  typename TTypes<T>::Matrix sorted,
+  void operator()(const GPUDevice& d,
+                  typename TTypes<T>::ConstMatrix input,
+                  typename TTypes<T>::Matrix temp,
                   typename TTypes<T>::Matrix output) {
-    UNUSED(sorted);
 
     const int num_rows = input.dimension(0); // batch_size
     const int num_cols = input.dimension(1);
 
-    // Move input to sorted (temp), and sort inplace
-    cudaMemcpy(output.data(), input.data(),
+    // define class axis
+    const int kClassDim = 1;
+    #if !defined(EIGEN_HAS_INDEX_LIST)
+        Eigen::DSizes<int, 1> along_class(kClassDim);
+    #else
+        Eigen::IndexList<Eigen::type2index<kClassDim> > along_class;
+    #endif
+
+    // move input to sorted (temp), and sort inplace
+    cudaMemcpy(temp.data(), input.data(),
                num_rows * num_cols * sizeof(T),
                cudaMemcpyDeviceToDevice);
-    odd_even_sort<T>(output, num_rows, num_cols);
+    odd_even_sort<T>(temp, num_rows, num_cols);
+
+    // Cumsum the sorted matrix along axis 1.
+    // Put results in output as the the sorted and cumsum needs to be used
+    // together.
+    Eigen::internal::SumReducer<T> reducer;
+    output.device(d) = temp.scan(1, reducer, false).eval();
+
+    // Calculate threshold used in support calculation.
+    // Replace sorted matrix, with the threshold booleans.
+    support_threshold<T>(output, num_rows, num_cols, temp);
+
+    // Sum each row, to get the support index.
+    // This will reuse the temporary matrix, which is larger than required,
+    // but the results will just be stored as if it was a flat vector.
+    temp.device(d) = temp.sum(along_class).eval();
+
+    // Calculate tau
+    // Overwrites temp results with tau(z), again this just uses temp
+    // as a flat vector.
+    calculate_tau<T>(output, num_rows, num_cols, temp);
+
+    // Calculate properbility
+    // Use temp and input, and put results in output
+    calculate_properbility<T>(input, temp, num_rows, num_cols, output);
   }
 };
 

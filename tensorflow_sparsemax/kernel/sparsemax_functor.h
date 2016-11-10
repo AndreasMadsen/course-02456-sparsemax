@@ -8,7 +8,8 @@ namespace functor {
 
 template <typename Device, typename T>
 struct Sparsemax {
-  void operator()(typename TTypes<T>::ConstMatrix input,
+  void operator()(const Device& d,
+                  typename TTypes<T>::ConstMatrix input,
                   typename TTypes<T>::Matrix sorted,
                   typename TTypes<T>::Matrix output);
 };

@@ -67,7 +67,8 @@ class SparsemaxOp : public OpKernel {
     auto sorted = temp_sorted.matrix<T>();
     auto output = probability_out->matrix<T>();
 
-    functor::Sparsemax<Device, T>()(input, sorted, output);
+    const Device& eigen_device = context->eigen_device<Device>();
+    functor::Sparsemax<Device, T>()(eigen_device, input, sorted, output);
   }
 };
 
