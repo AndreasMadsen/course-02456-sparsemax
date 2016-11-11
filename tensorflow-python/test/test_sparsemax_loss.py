@@ -75,19 +75,23 @@ def test_zero_loss():
 def test_Rop_estimated():
     """check sparsemax-loss Rop, aginst estimated Rop"""
     z = np.random.uniform(low=-3, high=3, size=(100, 10))
+    w = np.random.normal(1)
     q = np.zeros((100, 10))
     q[np.arange(0, 100), np.random.randint(0, 10, size=100)] = 1
 
     logits = tf.placeholder(tf.float64, name='z')
     labels = tf.constant(q, name='q')
+    weight = tf.constant(w, name='w', dtype=tf.float64)
+
     sparsemax = ops.sparsemax_op(logits)
     loss = ops.sparsemax_loss_op(logits, sparsemax, labels)
+    loss_transform = loss * weight
 
     with tf.Session() as sess:
         # https://www.tensorflow.org/versions/r0.8/api_docs/python/test.html
         analytical, numerical = tf.test.compute_gradient(
             logits, z.shape,
-            ops.sparsemax_loss_op(logits, sparsemax, labels), (100, ),
+            loss_transform, (100, ),
             x_init_value=z, delta=1e-9
         )
 
@@ -100,18 +104,26 @@ def test_Rop_estimated():
 
 def test_Rop_numpy():
     """check sparsemax-loss Rop, aginst numpy Rop"""
-    z = np.random.uniform(low=-3, high=3, size=(5, 3))
-    q = np.zeros((5, 3))
-    q[np.arange(0, 5), np.random.randint(0, 3, size=5)] = 1
+    z = np.random.uniform(low=-3, high=3, size=(100, 10))
+    w = np.random.normal(size=(100, 1))
+    q = np.zeros((100, 10))
+    q[np.arange(0, 100), np.random.randint(0, 10, size=100)] = 1
 
     logits = tf.placeholder(tf.float64, name='z')
-    labels = tf.placeholder(tf.float64, name='q')
+    labels = tf.constant(q, name='q')
+    weights = tf.constant(w, name='w')
+
     sparsemax = ops.sparsemax_op(logits)
     loss = ops.sparsemax_loss_op(logits, sparsemax, labels)
-    grad = tf.gradients(loss, [logits])[0]
+    loss_transform = tf.expand_dims(loss, 1) * weights
+
+    loss_transform_grad = tf.gradients(loss_transform, [logits])[0]
 
     with tf.Session() as sess:
+        # chain rule
+        grad = np.ones_like(w) * w
+
         np.testing.assert_array_equal(
-            grad.eval({logits: z, labels: q}),
-            -q + sparsemax.eval({logits: z})
+            loss_transform_grad.eval({logits: z}),
+            grad * (-q + sparsemax.eval({logits: z}))
         )

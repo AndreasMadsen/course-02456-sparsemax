@@ -30,10 +30,12 @@ def grad_sparsemax(op, grad):
 
 
 def grad_sparsemax_loss(op, grad):
+    # Get parameters in correct shape
     spm = op.inputs[1]
     labels = op.inputs[2]
-    result = tf.transpose(grad * tf.transpose(-labels + spm))
-    return [result, None, None]
+    grad = tf.expand_dims(grad, 1)
+
+    return [grad * (-labels + spm), None, None]
 
 
 def sparsemax_op(Z, name=None):

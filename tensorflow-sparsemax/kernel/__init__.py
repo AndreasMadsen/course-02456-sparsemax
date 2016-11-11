@@ -56,15 +56,13 @@ def _sparsemax_loss_grad(op, grad):
     Returns:
     Gradients with respect to the input of `SparsemaxLoss`.
     """
-    # Construct S(z)
+    # Get parameters in correct shape
     sparsemax = op.inputs[1]
     labels = op.inputs[2]
+    grad = tf.expand_dims(grad, 1)
 
-    # TODO: figure out why two transposed are required. Maybe something
-    # with grad being a vector, thus tf.transpose is wiredly defined.
-    # J(z, q) * v.T = (v * J(z, q).T).T
     return [
-        tf.transpose(grad * tf.transpose(-labels + sparsemax)),
+        grad * (-labels + sparsemax),
         None,
         None
     ]
