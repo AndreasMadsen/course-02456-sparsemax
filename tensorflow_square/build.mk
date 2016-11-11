@@ -5,7 +5,10 @@ tensorflow_square/kernel/custom_square.so: tensorflow_square/kernel/custom_squar
 # user friendly targets
 square-all: square-test square-lint
 
-square-test: tensorflow_square/kernel/custom_square.so
+
+square-build: tensorflow_square/kernel/custom_square.so
+
+square-test: square-build
 	nosetests --nologcapture -v -s tensorflow_square/test/test_*.py
 
 square-lint:
