@@ -20,38 +20,39 @@ typedef Eigen::GpuDevice GPUDevice;
 
 namespace functor {
 
-#define anyswap(T, A,B) {T temp=A;A=B;B=temp;}
-
 template <typename T>
-__global__ void odd_even_sort_kernel(T *sorted,
-                                     const int num_rows,
-                                     const int num_cols,
-                                     const int iterations) {
+__global__ void even_sort_kernel(T *sorted,
+                                 const int num_rows,
+                                 const int num_cols) {
   const int col_index = blockIdx.x * blockDim.x + threadIdx.x;
   const int row_index = blockIdx.y;
 
   T* sorted_row = &sorted[row_index * num_cols];
 
-  for(int i = 0; i < iterations; i++) {
-    //even phase
-    if (!(col_index & 1) && col_index < (num_cols - 1)) {
-        if (sorted_row[col_index] < sorted_row[col_index + 1]) {
-          T temp = sorted_row[col_index];
-          sorted_row[col_index] = sorted_row[col_index + 1];
-          sorted_row[col_index + 1] = temp;
-        }
-    }
-    __syncthreads();
+  if (!(col_index & 1) && col_index < (num_cols - 1)) {
+      if (sorted_row[col_index] < sorted_row[col_index + 1]) {
+        T temp = sorted_row[col_index];
+        sorted_row[col_index] = sorted_row[col_index + 1];
+        sorted_row[col_index + 1] = temp;
+      }
+  }
+}
 
-    //odd phase
-    if ((col_index & 1) && col_index < (num_cols - 1)) {
-        if (sorted_row[col_index] < sorted_row[col_index + 1]) {
-          T temp = sorted_row[col_index];
-          sorted_row[col_index] = sorted_row[col_index + 1];
-          sorted_row[col_index + 1] = temp;
-        }
-    }
-    __syncthreads();
+template <typename T>
+__global__ void odd_sort_kernel(T *sorted,
+                                const int num_rows,
+                                const int num_cols) {
+  const int col_index = blockIdx.x * blockDim.x + threadIdx.x;
+  const int row_index = blockIdx.y;
+
+  T* sorted_row = &sorted[row_index * num_cols];
+
+  if ((col_index & 1) && col_index < (num_cols - 1)) {
+      if (sorted_row[col_index] < sorted_row[col_index + 1]) {
+        T temp = sorted_row[col_index];
+        sorted_row[col_index] = sorted_row[col_index + 1];
+        sorted_row[col_index + 1] = temp;
+      }
   }
 }
 
@@ -69,12 +70,23 @@ void odd_even_sort(typename TTypes<T>::Matrix sorted,
   dim3 blocks(col_blocks, num_rows, 1);
 
   // calculate number of odd-even iterations
-  const int iterations = (num_cols % 2 == 0) ? num_cols/2 : (num_cols/2)+1;
+  const int iterations = static_cast<int>(std::ceil(
+   static_cast<double>(num_cols) / 2.0
+  ));
 
-  // launch kernel
-  odd_even_sort_kernel<T><<<blocks, threads_per_block>>>(
-    sorted.data(), num_rows, num_cols, iterations
-  );
+  // Launch the even and odd kernels separately to get a global syncronization.
+  // This is a very naive approach, as global syncronization is expensive.
+  for(int i = 0; i < iterations; i++) {
+    // launch even kernel
+    even_sort_kernel<T><<<blocks, threads_per_block>>>(
+      sorted.data(), num_rows, num_cols
+    );
+
+    // launch odd kernel
+    odd_sort_kernel<T><<<blocks, threads_per_block>>>(
+      sorted.data(), num_rows, num_cols
+    );
+  }
 }
 
 template <typename T>
