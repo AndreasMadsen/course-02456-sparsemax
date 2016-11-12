@@ -31,17 +31,14 @@ struct SparsemaxLoss {
     T zero = static_cast<T>(0);
     T half = static_cast<T>(0.5);
 
-    // z_k
-    auto z_k = labels * logits;
-
     // sum over support
     auto support = (sparsemax > zero).template cast<T>();
     auto sum_s = support * sparsemax * (logits - half * sparsemax);
 
-    // q norm
-    auto q_norm = half * (labels * labels);
+    // - z_k + ||q||^2
+    auto q_part = labels * (half * labels - logits);
 
-    losses.device(d) = (-z_k + sum_s + q_norm)
+    losses.device(d) = (sum_s + q_part)
       .sum(along_class)
       .eval();
   }
