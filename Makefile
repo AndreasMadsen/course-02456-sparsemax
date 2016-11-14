@@ -50,12 +50,13 @@ endif
 #
 all: reference-all square-all sparsemax-all sparsemax-python-all
 test: reference-test square-test sparsemax-test sparsemax-python-test
-lint: reference-lint square-lint sparsemax-lint sparsemax-python-lint
+lint: reference-lint square-lint sparsemax-lint sparsemax-python-lint benchmark-lint
 
-include tensorflow-sparsemax/build.mk
-include tensorflow-square/build.mk
-include python-reference/build.mk
-include tensorflow-python/build.mk
+include benchmark/build.mk
+include tensorflow_sparsemax/build.mk
+include tensorflow_square/build.mk
+include python_reference/build.mk
+include tensorflow_python/build.mk
 
 clean:
 	rm -f **/**/*.o

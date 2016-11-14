@@ -1,16 +1,18 @@
 
 import math
-
 import numpy as np
 import scipy
 
-import sparsemax
-import sparsemax_loss
+from python_reference import sparsemax
+from python_reference import sparsemax_loss
 
 
 class SparsemaxRegression:
     def __init__(self, input_size, output_size,
-                 regualizer=1e-1, learning_rate=1e-2):
+                 regualizer=1e-1, learning_rate=1e-2,
+                 random_state=None):
+        self.random_state = random_state
+
         # intialize weights
         self.input_size = input_size
         self.output_size = output_size
@@ -20,10 +22,16 @@ class SparsemaxRegression:
         self.regualizer = regualizer
         self.learning_rate = learning_rate
 
-    def reset(self, random_state=None):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+    def reset(self):
         self.W = scipy.stats.truncnorm.rvs(
             -2, 2, size=(self.input_size, self.output_size),
-            random_state=random_state
+            random_state=self.random_state
         )
         self.W *= math.sqrt(2 / (self.input_size + self.output_size))
         self.b = np.zeros((1, self.output_size))
