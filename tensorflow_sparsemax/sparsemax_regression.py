@@ -1,10 +1,21 @@
 from tensorflow_sparsemax.kernel import sparsemax, sparsemax_loss
 import tensorflow as tf
+import scipy
+import math
+
+
+def initializeW(input_size, output_size, random_state):
+    W = scipy.stats.truncnorm.rvs(
+            -2, 2, size=(input_size, output_size),
+            random_state=random_state
+        )
+    W *= math.sqrt(2 / (input_size + output_size))
+    return W
 
 
 class SparsemaxRegression:
     def __init__(self, input_size, output_size,
-                 regualizer=1, learning_rate=1e-2,
+                 regualizer=1e-1, learning_rate=1e-2,
                  random_state=None, dtype=tf.float64):
 
         self.graph = tf.Graph()
@@ -16,12 +27,10 @@ class SparsemaxRegression:
 
             # setup variables
             W = tf.Variable(
-                tf.truncated_normal(
-                    [input_size, output_size],
-                    stddev=0.1, seed=random_state, dtype=dtype
-                ),
+                initializeW(input_size, output_size, random_state),
                 name='W', dtype=dtype
             )
+
             b = tf.Variable(
                 tf.zeros([output_size], dtype=dtype),
                 name='b', dtype=dtype

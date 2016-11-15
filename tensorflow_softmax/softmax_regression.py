@@ -12,7 +12,7 @@ def initializeW(input_size, output_size, random_state):
     return W
 
 
-class SparsemaxRegression:
+class SoftmaxRegression:
     def __init__(self, input_size, output_size,
                  regualizer=1, learning_rate=1e-2,
                  random_state=None, dtype=tf.float64):
@@ -39,11 +39,11 @@ class SparsemaxRegression:
 
             # setup model
             logits = tf.matmul(self.x, W) + b
-            self._prediction = sparsemax_op(logits)
+            self._prediction = tf.nn.softmax(logits, name=None)
 
             # setup loss
             self._loss = tf.reduce_mean(
-                sparsemax_loss_op(logits, self._prediction, self.t)
+                tf.nn.softmax_cross_entropy_with_logits(logits, self.t)
             ) + regualizer * (tf.nn.l2_loss(W) + tf.nn.l2_loss(b))
 
             # setup train function
@@ -54,7 +54,7 @@ class SparsemaxRegression:
             # setup error function
             self._error = tf.reduce_mean(
                 tf.cast(tf.not_equal(
-                    tf.argmax(self._prediction, 1),
+                    tf.argmax(self._prediction,1),
                     tf.argmax(self.t, 1)
                 ), dtype)
             )

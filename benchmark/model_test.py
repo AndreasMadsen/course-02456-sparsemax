@@ -4,9 +4,9 @@ from nose.tools import assert_true
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import StratifiedKFold
+from scipy import stats
 
 ModelResults = collections.namedtuple('ModelResults', ['loss', 'missrate'])
-
 
 class ModelTest:
 
@@ -55,15 +55,20 @@ class ModelTest:
 
     def test(self, loss, missrate):
         # cross validation
+        n_splits = 5
         skf = StratifiedKFold(
-            n_splits=5, shuffle=True, random_state=self.random_state
+            n_splits=n_splits, shuffle=True, random_state=self.random_state
         )
 
+        losses, missrates = [], []
         for fold, (train_index, test_index) in \
                 enumerate(skf.split(self.dataset.data, self.dataset.target)):
             # fit model and get final test performance
-            results = self.test_fold(fold, train_index, test_index)
+            result = self.test_fold(fold, train_index, test_index)
+            losses.append(result.loss)
+            missrates.append(result.missrate)
 
-            # assert prediction scores
-            assert_true(results.loss < loss)
-            assert_true(results.missrate < missrate)
+        avg_loss, avg_missrate = np.mean(losses),\
+                                 np.mean(missrates)
+
+        return avg_missrate
