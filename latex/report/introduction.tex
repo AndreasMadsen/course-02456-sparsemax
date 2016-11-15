@@ -1,9 +1,9 @@
 \section{Introduction}
 
-The softmax transformation is a well known component in classic statistics such as multinormial logistic regression. The transformation is also used in neural networks both in multi-class classification and more recently in attention mechanisms.
+The softmax transformation is a well known component in classic statistics such as multinomial logistic regression. The transformation is also used in neural networks both in multi-class classification and more recently in attention mechanisms.
 
 The softmax transformation is very popular, likely because of its simplicity. It is easy to evaluate, differentiate and it has a simple convex loss function.
 
-However while softmax is very simple, it's simplistic design is also what causes its shortcommings. It is impossible for its output to be sparse. This can be a big issue because the target destribution is often sparse.
+However, while softmax is very simple, its simplistic design is also what causes its shortcommings. It is impossible for its output to be sparse. This can be a big issue because the target distribution is often sparse.
 
 A recent alternative to softmax is the sparsemax transformation \cite{sparsemax}. This has been shown to have many properties in common with the softmax transformation. It also has an associated convex loss function.

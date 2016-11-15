@@ -5,9 +5,9 @@ The softmax transformation is defined as:
 \mathrm{softmax}_i(\mathbf{z}) \coloneqq \frac{\exp(z_i)}{\sum_{j} \exp(z_j)}
 \end{equation}
 
-This transformation maps from $z \in \mathbb{R}^K$ to a properbility distribution $\mathbb{P}^K \coloneqq \{ \mathbf{p} \in \mathbb{R}^K,  \mathbf{1}^T \mathbf{p} = 1, \mathbf{p} \ge \mathbf{0} \}$. $\mathbf{1}^T \mathbf{p} = 1$ is ensured by dividing by the sum, likewise $\mathbf{p} \ge \mathbf{0}$ is ensured by the expontial function. However it is precisely the expontial function that prevents the softmax properbility distribution from becomming sparse.
+This transformation maps from $z \in \mathbb{R}^K$ to a probability distribution $\mathbb{P}^K \coloneqq \{ \mathbf{p} \in \mathbb{R}^K,  \mathbf{1}^T \mathbf{p} = 1, \mathbf{p} \ge \mathbf{0} \}$. $\mathbf{1}^T \mathbf{p} = 1$ is ensured by dividing by the sum, likewise $\mathbf{p} \ge \mathbf{0}$ is ensured by the exponential function. However it is precisely the exponential function that prevents the softmax properbility distribution from becoming sparse.
 
-To allow sparsity, Martins et al. \cite{sparsemax} suggests using the following optimization problem istead.
+To allow sparsity, Martins et al. \cite{sparsemax} suggest  using the following optimization problem instead:
 \begin{equation}
 \mathrm{sparsemax}(\mathbf{z}) \coloneqq \argmin_{\mathbf{p}\, \in\, \mathbb{P}^K} \left\lVert \mathbf{p} - \mathbf{z} \right\rVert_2^2 
 \end{equation}
@@ -23,9 +23,9 @@ This can be written as a constrained quadratic program:
 \end{equation}
 
 \subsection{Sparsemax}
-Problem \eqref{eq:sparsemax-QP} is very simple constrained quadratic program, that is known as the ``continuous quadratic knapsack problem'' or a ``singly linearly constrained quadratic program''. Solving it has been studied for a few decades. The breakthough happened in 1980 where Helgason et al. \cite{Helgason1980} proposed an $\mathcal{O}(K \log(K))$ algorithm for solving it.
+Problem \eqref{eq:sparsemax-QP} is a very simple constrained quadratic program, which is known as the ``continuous quadratic knapsack problem'' or a ``singly linearly constrained quadratic program''. Solving it has been studied for a few decades. The breakthough happened in 1980 where Helgason et al. \cite{Helgason1980} proposed an $\mathcal{O}(K \log(K))$ algorithm for solving it.
 \begin{algorithm}[H]
-  \caption{Calculate sparemax properbility distribution from logits $\mathbf{z}$.}
+  \caption{Calculate sparsemax probability distribution from logits $\mathbf{z}$.}
   \begin{algorithmic}[1]
     \Function{Sparsemax}{$\mathbf{z}$}
       \State \Call{Sort}{$\mathbf{z}$} as $z_{(1)} \ge \cdots \ge z_{(K)}$
@@ -36,9 +36,9 @@ Problem \eqref{eq:sparsemax-QP} is very simple constrained quadratic program, th
   \end{algorithmic}
 \end{algorithm}
 
-Other solution methods has then later been devloped, \cite{Liu2016} contains a short overview of theise. A poular apparoch is based on median search, these algorithms have a linear time complexity. The first algorithm using median search is \cite{brucker1984a}, for a general overview of more recent algorithms see \cite{kiwiel2008a-median}. Another category is the variable fixing method, these methods avoids sorting and median finding, by finding the solution to one variable in each iteration. These algorithms have quadratic complexity, but performs much better in practice \cite{kiwiel2008a-fixing}.
+Other solution methods has then later been developed, \cite{Liu2016} contains a short overview of these. A popular approach is based on median search, these algorithms have a linear time complexity. The first algorithm using median search is \cite{brucker1984a}, for a general overview of more recent algorithms see \cite{kiwiel2008a-median}. Another category is the variable fixing method, these methods avoids sorting and median finding, by finding the solution to one variable in each iteration. These algorithms have quadratic complexity, but performs much better in practice \cite{kiwiel2008a-fixing}.
 
-Unfortunetly all of these methods where developed with serial computation in mind. They do thus no easily apply a GPUs implementation, which has become the mainstream computational device for neural networks. For this reason the original method \cite{Helgason1980} has been used, with only minor modifications for parallelisme as described in Algorithm \ref{sparsemax-parallel-algorithm}.
+Unfortunetly all of these methods were developed with serial computation in mind. As a consequence, they do not easily apply to a GPU implementation, which has become the mainstream computational device for neural networks. For this reason the original method \cite{Helgason1980} has been used, with only minor modifications for parallelism as described in Algorithm \ref{sparsemax-parallel-algorithm}.
 
 \begin{algorithm}[H]
   \caption{Parallel sparemax.}
@@ -59,19 +59,19 @@ Assuming $K$ processors Algorithm \ref{sparsemax-parallel-algorithm} has time co
 
 In neural network optimization where batches or mini-batches are used, one can also parallelize over the observations.
 
-The sparsemax transformation is mostly differentiable, and does thus have a defined Jacobian. In Tensorflow \cite{tensorflow2015-whitepaper} the chain rule is used for automatic differentiation. For example if the logits $\mathbf{z}$ is a function of some weight matrix $\mathbf{W}$, then we have:
+The sparsemax transformation is mostly differentiable, resulting in a well-defined jacobaian for the transformation. In Tensorflow \cite{tensorflow2015-whitepaper} the chain rule is used for automatic differentiation. For example if the logits $\mathbf{z}$ is a function of some weight matrix $\mathbf{W}$, then we have:
 \begin{equation}
 \frac{\mathrm{sparsemax}(\mathbf{z})}{\partial \mathbf{W}} = \frac{\mathrm{sparsemax}(\mathbf{z})}{\partial \mathbf{z}} \frac{\partial \mathbf{z}}{\partial \mathbf{W}}
 \end{equation}
 
-Thus in Tensorflow is is the ``Jacobian times a vector'' operation that needs to be defined. From \cite{sparsemax} this is:
+Thus in Tensorflow it is the ``Jacobian times a vector'' operation that needs to be defined. From \cite{sparsemax} this is:
 \begin{equation}
 \mathbf{J}_{\mathrm{sparsemax}}(\mathbf{z}) \cdot \mathbf{v} = \mathbf{s} \odot (\mathbf{v} - \hat{v} \mathbf{1}), \text{  where } \hat{v} \coloneqq \frac{\mathbf{s}^T \mathbf{v}}{||\mathbf{s}||}
 \end{equation}
 
 \subsection{Sparsemax Loss}
 
-The sparsemax loss function is derived by defining the gradient of the sparsema loss to be similar, to the gradient of the softmax loss (entropy loss):
+The sparsemax loss function is derived by defining the gradient of the sparsemax loss to be similar to the gradient of the softmax loss (entropy loss):
 \begin{equation}
 \nabla_{\mathbf{z}} \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = -\mathbf{q} + \mathrm{sparsemax}(\mathbf{z})
 \label{sparsemax-loss-gradient}
@@ -83,13 +83,13 @@ From the gradient \eqref{sparsemax-loss-gradient} one can easily create the ``Gr
 \nabla_{\mathbf{z}} \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) \cdot v = (-\mathbf{q} + \mathrm{sparsemax}(\mathbf{z})) v
 \end{equation}
 
-From \eqref{sparsemax-loss-gradient} its primitive function, the sparsemax loss can the be derived \cite{sparsemax}:
+From \eqref{sparsemax-loss-gradient}, its primitive function, the sparsemax loss can the be derived \cite{sparsemax}:
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \frac{1}{2} \sum_{j \in S(\mathbf{z})} (z_j^2 - \tau^2(\mathbf{z})) + \frac{1}{2} ||\mathbf{q}||^2 - \mathbf{q}^T \mathbf{z}
 \label{sparsemax-loss-original}
 \end{equation}
 
-The loss functions \eqref{sparsemax-loss-original} dependency on $\tau(\mathbf{z})$ is not ideal, as it is inconvenient to recalculate it or alternatively store it in memory. Fortunetly because the sum is over the support $S(\mathbf{z})$ one can reformulate it to only be dependent on $\mathbf{z}$, $\mathrm{sparsemax}(\mathbf{z})$ and $\mathbf{q}$:
+The loss function \eqref{sparsemax-loss-original} dependency on $\tau(\mathbf{z})$ is not ideal, as it is inconvenient to recalculate it or alternatively store it in memory. Fortunately, because the sum is over the support $S(\mathbf{z})$ one can reformulate it to only be dependent on $\mathbf{z}$, $\mathrm{sparsemax}(\mathbf{z})$ and $\mathbf{q}$:
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \frac{1}{2} \sum_{j \in S(\mathbf{z})} p_j (2 z_j - p_j) + \frac{1}{2} ||\mathbf{q}||_2^2 - \mathbf{q}^T \mathbf{z}
 \label{sparsemax-loss-reformulated}
