@@ -1,0 +1,65 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}	% Flere sprog tegnsæt (fx æøå)
+\usepackage[english]{babel}	% Dansk orddeling (kan ændres til english)
+\usepackage[T1]{fontenc}		% Brug 8-bit front
+\usepackage{lmodern}		% Vektor front
+
+\usepackage{02456}
+
+\usepackage[svgnames]{xcolor} % Udvider \color med "SVG color names"
+\usepackage{graphicx}	% Kompatibilitet til visning af pixel billeder (.png, .jpg, .gif)
+\usepackage{epstopdf}	% Kompatibilitet til visning af vector billeder (.eps)
+\usepackage{parskip}	% Tilføjer vertikal margin til hver paragraph
+\usepackage{float}		% TIllader H som positions parameter
+\usepackage{subcaption}	% Tillader subfigure, subtable samt \captions
+\usepackage{amssymb}	% Flere matematiske symboler
+\usepackage{amsthm}      % Endnu flere matematiske symboler
+\usepackage{mathtools}	% Det meste matematik (indeholder ams­math og rettelser)
+\usepackage{xfrac}		% Flere fracs (\sfrac{}{})
+\usepackage{listings}	% Indsæt code
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{todonotes}	% Cool to-do notes, [disable] skjuler to-do
+\usepackage[bookmarks,bookmarksnumbered,hidelinks]{hyperref} % clickable pdf (til sidst)
+\usepackage[bibstyle=ieee,citestyle=numeric-comp]{biblatex} % Benyt BibLaTeX til formatering
+
+
+% algorithm environment
+%http://tex.stackexchange.com/questions/1375/what-is-a-good-package-for-displaying-algorithms
+\algnewcommand{\Let}[2]{\State #1 $\gets$ #2}
+\algrenewcommand\Call[2]{\textproc{#1}(#2)}
+\algrenewcommand\alglinenumber[1]{{\footnotesize\color{gray}\ttfamily#1}}
+
+\setlength{\marginparwidth}{40pt} 				% Mere brede på margin notes og to-do
+\DeclareGraphicsExtensions{.pdf,.eps,.png,.jpg,.gif}
+
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
+\addbibresource{bibliography.bib}
+
+\begin{document}
+
+\title{Tensorflow implementation of sparsemax}
+\name{Andreas Madsen (s123598), Frederik Wolgast Rørbech (s123956),\\ Marco Dal Farra Kristensen (s152630)}
+\address{Technical University Of Denmark}
+\date{\today}
+
+\maketitle
+
+% Using input because of page restriction of 4 pages (\include adds newpage)
+\input{abstract}
+\input{introduction}
+\input{methods}
+\input{results}
+\input{discussion}
+\input{conclusion}
+\input{acknowledgment}
+\section{References}
+\printbibliography[heading=none]
+
+\appendix
+\include{appendix}
+
+\end{document}
