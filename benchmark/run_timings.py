@@ -10,9 +10,10 @@ import regressors
 from table import Table
 
 thisdir = path.dirname(path.realpath(__file__))
+tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
 
 
-def timings(regressors, datasets, epochs=1000, iterations=50, verbose=False):
+def timings(regressors, datasets, epochs=100, iterations=10, verbose=False):
     '''Saves timings for regressors to filename.txt'''
 
     col_names = [''] * len(datasets)
@@ -59,12 +60,15 @@ def timings(regressors, datasets, epochs=1000, iterations=50, verbose=False):
 
 def main():
     data, col_names, row_names = timings(
-        regressors.all_regressors, datasets.all_datasets
+        regressors.all_regressors, datasets.all_datasets, verbose=True
     )
+    np.savez(
+        path.join(tabledir, 'timings.npz'),
+        data=data, col_names=col_names, row_names=row_names
+    )
+
     table = Table(data, col_names, row_names)
-    table.save(
-        path.join(thisdir, '..', 'latex', 'report', 'tables', 'timings.tex')
-    )
+    table.save(path.join(tabledir, 'timings.tex'))
 
 if __name__ == "__main__":
     main()

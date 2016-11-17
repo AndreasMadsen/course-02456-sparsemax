@@ -11,6 +11,7 @@ from table import Table
 from model_evaluator import ModelEvaluator
 
 thisdir = path.dirname(path.realpath(__file__))
+tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
 
 
 def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
@@ -54,12 +55,15 @@ def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
 
 def main():
     data, col_names, row_names = results(
-        regressors.data_regressors, datasets.all_datasets, epochs=1000, verbose=True
+        regressors.data_regressors, datasets.all_datasets, verbose=True
     )
+    np.savez(
+        path.join(tabledir, 'results.npz'),
+        data=data, col_names=col_names, row_names=row_names
+    )
+
     table = Table(data, col_names, row_names)
-    table.save(
-        path.join(thisdir, '..', 'latex', 'report', 'tables', 'results.tex')
-    )
+    table.save(path.join(tabledir, 'results.tex'))
 
 if __name__ == "__main__":
     main()
