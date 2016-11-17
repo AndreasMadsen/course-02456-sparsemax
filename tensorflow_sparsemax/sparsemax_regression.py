@@ -17,7 +17,7 @@ class SparsemaxRegression:
     def __init__(self, input_size, output_size,
                  regualizer=1e-1, learning_rate=1e-2,
                  random_state=None, dtype=tf.float64):
-
+        self.name = 'sparsemax - tensorflow native'
         self.graph = tf.Graph()
 
         with self.graph.as_default():

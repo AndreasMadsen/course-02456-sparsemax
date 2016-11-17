@@ -3,6 +3,7 @@ import tensorflow as tf
 import scipy
 import math
 
+
 def initializeW(input_size, output_size, random_state):
     W = scipy.stats.truncnorm.rvs(
             -2, 2, size=(input_size, output_size),
@@ -16,7 +17,7 @@ class SparsemaxRegression:
     def __init__(self, input_size, output_size,
                  regualizer=1, learning_rate=1e-2,
                  random_state=None, dtype=tf.float64):
-
+        self.name = 'sparsemax - tensorflow numpy'
         self.graph = tf.Graph()
 
         with self.graph.as_default():

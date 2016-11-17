@@ -11,6 +11,7 @@ class SparsemaxRegression:
     def __init__(self, input_size, output_size,
                  regualizer=1e-1, learning_rate=1e-2,
                  random_state=None):
+        self.name = 'sparsemax - numpy'
         self.random_state = random_state
 
         # intialize weights

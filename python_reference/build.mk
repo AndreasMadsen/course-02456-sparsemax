@@ -1,6 +1,6 @@
 
 # user friendly targets
-reference-all: test lint
+reference-all: reference-test reference-lint
 
 reference-test:
 	nosetests -v -s python_reference/test/test_*.py
