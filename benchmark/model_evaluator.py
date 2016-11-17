@@ -1,5 +1,6 @@
 
 import numpy as np
+from scipy.stats import entropy
 from sklearn.model_selection import StratifiedKFold
 
 
@@ -30,12 +31,15 @@ class ModelEvaluator:
         self.model.update(x_train, t_train, epochs=self.epochs)
 
         # prediction on test data
-        target = np.argmax(t_test, axis=1)
-        predict = np.argmax(self.model.predict(x_test), axis=1)
-        missrate = np.mean(predict != target)
+        target = t_test
+        predict = self.model.predict(x_test)
+        divergence = np.mean(_jensen_shannon_divergence(target, predict))
+
+        if self.verbose:
+            print('      %d: %f' % (fold, divergence))
 
         # TODO: change this to a KL distance when a target distribution is used
-        return missrate
+        return divergence
 
     def all_folds(self, n_splits=5):
         # cross validation
@@ -51,3 +55,8 @@ class ModelEvaluator:
             missrates[fold] = self.single_fold(fold, train_index, test_index)
 
         return missrates
+
+
+def _jensen_shannon_divergence(p, q):
+    m = 0.5 * (p.T + q.T)
+    return 0.5 * (entropy(p.T, m) + entropy(q.T, m))

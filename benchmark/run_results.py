@@ -13,7 +13,7 @@ from model_evaluator import ModelEvaluator
 thisdir = path.dirname(path.realpath(__file__))
 
 
-def results(regressors, datasets, epochs=1000, n_splits=5):
+def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
     '''Saves timings for regressors to filename.txt'''
 
     col_names = [''] * len(datasets)
@@ -24,11 +24,12 @@ def results(regressors, datasets, epochs=1000, n_splits=5):
         # intialize dataset
         dataset = DatasetInitializer()
         col_names[dataset_i] = dataset.name
+        if verbose:
+            print(dataset.name)
 
         for regressor_i, regressor in enumerate(regressors):
             # intialize model
             regression = regressor(
-                observations=dataset.observations,
                 input_size=dataset.input_size,
                 output_size=dataset.output_size,
                 random_state=42,
@@ -36,11 +37,14 @@ def results(regressors, datasets, epochs=1000, n_splits=5):
                 learning_rate=dataset.learning_rate
             )
             row_names[regressor_i] = regression.name
+            if verbose:
+                print('  ' + regression.name)
 
             with regression as model:
                 evaluator = ModelEvaluator(
                     model, dataset,
-                    random_state=42, epochs=epochs
+                    random_state=42, epochs=epochs,
+                    verbose=verbose
                 )
                 missrates = evaluator.all_folds(n_splits=n_splits)
                 results[regressor_i, dataset_i, :] = missrates
@@ -50,7 +54,7 @@ def results(regressors, datasets, epochs=1000, n_splits=5):
 
 def main():
     data, col_names, row_names = results(
-        regressors.data_regressors, datasets.all_datasets, epochs=5
+        regressors.data_regressors, datasets.all_datasets, epochs=1000, verbose=True
     )
     table = Table(data, col_names, row_names)
     table.save(
