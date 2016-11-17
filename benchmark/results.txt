@@ -1,8 +1,0 @@
-\begin{tabular}{lrr}
-\hline
- Model     &   MNIST &   Iris \\
-\hline
- SparseMax &   0.050 &  0.040 \\
- SoftMax   &   0.037 &  0.080 \\
-\hline
-\end{tabular}

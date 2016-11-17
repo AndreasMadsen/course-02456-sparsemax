@@ -1,8 +1,0 @@
-\begin{tabular}{lll}
-\hline
- Dataset   & SparseMax   & SoftMax    \\
-\hline
- MNIST     & 2.33+-0.03  & 2.43+-0.1  \\
- Iris      & 1.72+-0.8   & 1.38+-0.73 \\
-\hline
-\end{tabular}
