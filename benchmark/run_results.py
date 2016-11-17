@@ -7,7 +7,7 @@ import numpy as np
 
 import datasets
 import regressors
-from table import Table
+from table import SummaryTable
 from model_evaluator import ModelEvaluator
 
 thisdir = path.dirname(path.realpath(__file__))
@@ -17,14 +17,14 @@ tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
 def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
     '''Saves timings for regressors to filename.txt'''
 
-    col_names = [''] * len(datasets)
-    row_names = [''] * len(regressors)
-    results = np.zeros((len(regressors), len(datasets), n_splits))
+    col_names = [''] * len(regressors)
+    row_names = [''] * len(datasets)
+    results = np.zeros((len(datasets), len(regressors), n_splits))
 
     for dataset_i, DatasetInitializer in enumerate(datasets):
         # intialize dataset
         dataset = DatasetInitializer()
-        col_names[dataset_i] = dataset.name
+        row_names[dataset_i] = dataset.name
         if verbose:
             print(dataset.name)
 
@@ -37,7 +37,7 @@ def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
                 regualizer=dataset.regualizer,
                 learning_rate=dataset.learning_rate
             )
-            row_names[regressor_i] = regression.name
+            col_names[regressor_i] = regression.name
             if verbose:
                 print('  ' + regression.name)
 
@@ -47,8 +47,11 @@ def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
                     random_state=42, epochs=epochs,
                     verbose=verbose
                 )
-                missrates = evaluator.all_folds(n_splits=n_splits)
-                results[regressor_i, dataset_i, :] = missrates
+                missrates = evaluator.all_folds(
+                    n_splits=n_splits,
+                    stratified=dataset.stratified
+                )
+                results[dataset_i, regressor_i, :] = missrates
 
     return (results, col_names, row_names)
 
@@ -62,7 +65,7 @@ def main():
         data=data, col_names=col_names, row_names=row_names
     )
 
-    table = Table(data, col_names, row_names)
+    table = SummaryTable(data, col_names, row_names)
     table.save(path.join(tabledir, 'results.tex'))
 
 if __name__ == "__main__":

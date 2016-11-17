@@ -16,7 +16,7 @@ class SoftmaxRegression:
     def __init__(self, input_size, output_size, observations=None,
                  regualizer=1, learning_rate=1e-2,
                  random_state=None, dtype=tf.float64):
-        self.name = 'softmax - tensorflow'
+        self.name = 'Softmax'
         self.fast = observations is not None
 
         self.graph = tf.Graph()

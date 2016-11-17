@@ -21,7 +21,9 @@ if shutil.which("unrar") is None:
 
 class _AbstractDataset:
     def __init__(self, inputs, targets,
-                 regualizer=1e-1, learning_rate=1e-2, name=None):
+                 stratified=True,
+                 regualizer=1e-1, learning_rate=1e-2,
+                 name=None):
         self.observations = inputs.shape[0]
 
         self.input_size = inputs.shape[1]
@@ -30,19 +32,21 @@ class _AbstractDataset:
         self.output_size = targets.shape[1]
         self.targets = targets
 
+        self.stratified = stratified
         self.regualizer = regualizer
         self.learning_rate = learning_rate
 
-        self.name = type(self).__name__.lower() if name is None else name
+        self.name = type(self).__name__ if name is None else name
 
 
-class Digits(_AbstractDataset):
+class MNIST(_AbstractDataset):
     def __init__(self):
         digits = datasets.fetch_mldata('MNIST original', data_home=data_home)
 
         super().__init__(
             digits.data,
-            LabelBinarizer().fit_transform(digits.target)
+            LabelBinarizer().fit_transform(digits.target),
+            stratified=True
         )
 
 
@@ -52,7 +56,8 @@ class Iris(_AbstractDataset):
 
         super().__init__(
             iris.data,
-            LabelBinarizer().fit_transform(iris.target)
+            LabelBinarizer().fit_transform(iris.target),
+            stratified=True
         )
 
 
@@ -116,18 +121,18 @@ def _mulan(name):
 class Scene(_AbstractDataset):
     def __init__(self):
         inputs, targets = _mulan('scene')
-        super().__init__(inputs, targets)
+        super().__init__(inputs, targets, stratified=False)
 
 
 class Emotions(_AbstractDataset):
     def __init__(self):
         inputs, targets = _mulan('emotions')
-        super().__init__(inputs, targets)
+        super().__init__(inputs, targets, stratified=False)
 
 
 class CAL500(_AbstractDataset):
     def __init__(self):
         inputs, targets = _mulan('CAL500')
-        super().__init__(inputs, targets, name='CAL500')
+        super().__init__(inputs, targets, stratified=False)
 
-all_datasets = [Digits, Iris, Scene, Emotions]
+all_datasets = [MNIST, Iris, Scene, Emotions, CAL500]

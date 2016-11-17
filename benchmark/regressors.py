@@ -14,7 +14,7 @@ if 'CUDA_VISIBLE_DEVICES' in os.environ:
 class SparsemaxRegressionNativeCPU(tensorflow_sparsemax.SparsemaxRegression):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name += ' CPU'
+        self.name = 'TF CPU'
 
     def __enter__(self):
         if CUDA_VISIBLE_DEVICES is not None:
@@ -30,20 +30,26 @@ class SparsemaxRegressionNativeCPU(tensorflow_sparsemax.SparsemaxRegression):
 class SparsemaxRegressionNativeGPU(tensorflow_sparsemax.SparsemaxRegression):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name += ' GPU'
+        self.name = 'TF GPU'
+
+
+class SparsemaxRegression(tensorflow_sparsemax.SparsemaxRegression):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = 'Sparsemax'
 
 all_regressors = [
+    tensorflow_softmax.SoftmaxRegression,
+    python_reference.SparsemaxRegression,
     tensorflow_python.SparsemaxRegression,
     SparsemaxRegressionNativeCPU,
-    SparsemaxRegressionNativeGPU,
-    python_reference.SparsemaxRegression,
-    tensorflow_softmax.SoftmaxRegression
+    SparsemaxRegressionNativeGPU
 ]
 
 if CUDA_VISIBLE_DEVICES is None:
     all_regressors.remove(SparsemaxRegressionNativeGPU)
 
 data_regressors = [
-    tensorflow_sparsemax.SparsemaxRegression,
-    tensorflow_softmax.SoftmaxRegression
+    tensorflow_softmax.SoftmaxRegression,
+    SparsemaxRegression
 ]

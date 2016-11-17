@@ -1,7 +1,7 @@
 
 import numpy as np
 from scipy.stats import entropy
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 
 
 class ModelEvaluator:
@@ -41,9 +41,10 @@ class ModelEvaluator:
         # TODO: change this to a KL distance when a target distribution is used
         return divergence
 
-    def all_folds(self, n_splits=5):
+    def all_folds(self, n_splits=5, stratified=True):
         # cross validation
-        skf = StratifiedKFold(
+        Splitter = StratifiedKFold if stratified else KFold
+        skf = Splitter(
             n_splits=n_splits, shuffle=True, random_state=self.random_state
         )
         splits = skf.split(self.x, np.argmax(self.t, axis=1))

@@ -7,7 +7,7 @@ import numpy as np
 
 import datasets
 import regressors
-from table import Table
+from table import SummaryTable
 
 thisdir = path.dirname(path.realpath(__file__))
 tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
@@ -16,14 +16,14 @@ tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
 def timings(regressors, datasets, epochs=100, iterations=10, verbose=False):
     '''Saves timings for regressors to filename.txt'''
 
-    col_names = [''] * len(datasets)
-    row_names = [''] * len(regressors)
-    results = np.zeros((len(regressors), len(datasets), iterations))
+    col_names = [''] * len(regressors)
+    row_names = [''] * len(datasets)
+    results = np.zeros((len(datasets), len(regressors), iterations))
 
     for dataset_i, DatasetInitializer in enumerate(datasets):
         # intialize dataset
         dataset = DatasetInitializer()
-        col_names[dataset_i] = dataset.name
+        row_names[dataset_i] = dataset.name
         if verbose:
             print(dataset.name)
 
@@ -37,7 +37,7 @@ def timings(regressors, datasets, epochs=100, iterations=10, verbose=False):
                 regualizer=dataset.regualizer,
                 learning_rate=dataset.learning_rate
             )
-            row_names[regressor_i] = regression.name
+            col_names[regressor_i] = regression.name
             if verbose:
                 print('  ' + regression.name)
 
@@ -51,7 +51,7 @@ def timings(regressors, datasets, epochs=100, iterations=10, verbose=False):
                         dataset.inputs, dataset.targets, epochs=epochs
                     )
                     tock = time.perf_counter() - tick
-                    results[regressor_i, dataset_i, iteration_i] = tock
+                    results[dataset_i, regressor_i, iteration_i] = tock
                     if verbose:
                         print('      %d: %f' % (iteration_i, tock))
 
@@ -67,7 +67,7 @@ def main():
         data=data, col_names=col_names, row_names=row_names
     )
 
-    table = Table(data, col_names, row_names)
+    table = SummaryTable(data, col_names, row_names)
     table.save(path.join(tabledir, 'timings.tex'))
 
 if __name__ == "__main__":
