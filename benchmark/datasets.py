@@ -56,57 +56,78 @@ class Iris(_AbstractDataset):
         )
 
 
+def _mulan(name):
+    data_root = 'http://sourceforge.net/projects/mulan/files/datasets/'
+
+    # prepear
+    href = data_root + name + '.rar'
+    data_dir = path.join(data_home, name)
+    file_rar = path.join(data_dir, name + '.rar')
+    file_arff = path.join(data_dir, name + '.arff')
+    file_npz = path.join(data_dir, name + '.npz')
+
+    # data have not been feched and processed
+    if not path.exists(file_npz):
+        os.makedirs(data_dir, exist_ok=True)
+
+        # download file
+        urllib.request.urlretrieve(href, file_rar)
+
+        # extract arff file from rar archive
+        with rarfile.RarFile(file_rar) as rf:
+            rf.extract(name + '.arff', path=data_dir)
+
+        # load arff file
+        with open(file_arff, 'r') as f:
+            data, meta = scipy.io.arff.loadarff(f)
+
+        # get inputs names
+        target_names = [
+            name
+            for name, type in zip(meta.names(), meta.types())
+            if (type is 'nominal')
+        ]
+
+        input_names = [
+            name for name in meta.names() if name not in target_names
+        ]
+
+        # stack collums in a 2d-numpy array, for both inputs and targets
+        inputs = np.vstack(
+            [data[name] for name in input_names]
+        ).astype(np.float64).T
+
+        targets = np.vstack(
+            [data[name] for name in target_names]
+        ).astype(np.float64).T
+
+        # convert targets to a distribution
+        targets /= targets.sum(axis=1)[:, np.newaxis]
+
+        # save inputs and targets numpy arrays
+        np.savez(file_npz, inputs=inputs, targets=targets)
+
+    # data have all ready been processed, just load it
+    data = np.load(file_npz)
+
+    return (data['inputs'], data['targets'])
+
+
 class Scene(_AbstractDataset):
     def __init__(self):
-        scene_dir = path.join(data_home, 'scene')
-        href = 'http://sourceforge.net/projects/mulan/files/datasets/scene.rar'
+        inputs, targets = _mulan('scene')
+        super().__init__(inputs, targets)
 
-        # data have not been feched and processed
-        if not path.exists(path.join(scene_dir, 'scene.npz')):
-            os.makedirs(scene_dir, exist_ok=True)
 
-            # download file
-            urllib.request.urlretrieve(href, path.join(scene_dir, 'scene.rar'))
+class Emotions(_AbstractDataset):
+    def __init__(self):
+        inputs, targets = _mulan('emotions')
+        super().__init__(inputs, targets)
 
-            # extract arff file from rar archive
-            with rarfile.RarFile(path.join(scene_dir, 'scene.rar')) as rf:
-                rf.extract('scene.arff', path=scene_dir)
 
-            # load arff file
-            with open(path.join(scene_dir, 'scene.arff'), 'r') as f:
-                data, meta = scipy.io.arff.loadarff(f)
+class CAL500(_AbstractDataset):
+    def __init__(self):
+        inputs, targets = _mulan('CAL500')
+        super().__init__(inputs, targets, name='CAL500')
 
-            # get target and inputs names
-            target_names = [
-                'Beach', 'Sunset', 'FallFoliage', 'Field', 'Mountain', 'Urban'
-            ]
-            input_names = [
-                name for name in meta.names() if name not in target_names
-            ]
-
-            # stack collums in a 2d-numpy array, for both inputs and targets
-            inputs = np.vstack(
-                [data[name] for name in input_names]
-            ).astype(np.float64).T
-
-            targets = np.vstack(
-                [data[name] for name in target_names]
-            ).astype(np.float64).T
-
-            # convert targets to a distribution
-            targets /= targets.sum(axis=1)[:, np.newaxis]
-
-            # save inputs and targets numpy arrays
-            np.savez(
-                path.join(scene_dir, 'scene.npz'),
-                inputs=inputs, targets=targets
-            )
-
-        # data have all ready been processed, just load it
-        data = np.load(
-            path.join(scene_dir, 'scene.npz')
-        )
-
-        super().__init__(data['inputs'], data['targets'])
-
-all_datasets = [Digits, Iris, Scene]
+all_datasets = [Digits, Iris, Scene, Emotions]
