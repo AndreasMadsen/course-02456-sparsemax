@@ -27,8 +27,7 @@ class ModelEvaluator:
         self.model.reset()
 
         # train model
-        for epoch in range(0, self.epochs):
-            self.model.update(x_train, t_train)
+        self.model.update(x_train, t_train, epochs=self.epochs)
 
         # prediction on test data
         target = np.argmax(t_test, axis=1)

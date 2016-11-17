@@ -1,7 +1,8 @@
-from tensorflow_sparsemax.kernel import sparsemax, sparsemax_loss
 import tensorflow as tf
 import scipy
 import math
+
+from tensorflow_sparsemax.kernel import sparsemax, sparsemax_loss
 
 
 def initializeW(input_size, output_size, random_state):
@@ -14,16 +15,30 @@ def initializeW(input_size, output_size, random_state):
 
 
 class SparsemaxRegression:
-    def __init__(self, input_size, output_size,
+    def __init__(self, input_size, output_size, observations=None,
                  regualizer=1e-1, learning_rate=1e-2,
                  random_state=None, dtype=tf.float64):
         self.name = 'sparsemax - tensorflow native'
+        self.fast = observations is not None
+
         self.graph = tf.Graph()
 
         with self.graph.as_default():
             # setup inputs
-            self.x = tf.placeholder(dtype, [None, input_size], name='x')
-            self.t = tf.placeholder(dtype, [None, output_size], name='t')
+            x = self.x_init = self.x = tf.placeholder(
+                dtype, [observations, input_size], name='x'
+            )
+            t = self.t_init = self.t = tf.placeholder(
+                dtype, [observations, output_size], name='t'
+            )
+
+            if observations is not None:
+                x = self.x_init = self.x_var = tf.Variable(
+                    self.x, trainable=False, collections=[]
+                )
+                t = self.t_init = self.t_var = tf.Variable(
+                    self.t, trainable=False, collections=[]
+                )
 
             # setup variables
             W = tf.Variable(
@@ -40,12 +55,12 @@ class SparsemaxRegression:
             self._reset = tf.initialize_all_variables()
 
             # setup model
-            logits = tf.matmul(self.x, W) + b
+            logits = tf.matmul(x, W) + b
             self._prediction = sparsemax(logits)
 
             # setup loss
             self._loss = tf.reduce_mean(
-                sparsemax_loss(logits, self._prediction, self.t)
+                sparsemax_loss(logits, self._prediction, t)
             ) + regualizer * (tf.nn.l2_loss(W) + tf.nn.l2_loss(b))
 
             # setup train function
@@ -57,7 +72,7 @@ class SparsemaxRegression:
             self._error = tf.reduce_mean(
                 tf.cast(tf.not_equal(
                     tf.argmax(self._prediction, 1),
-                    tf.argmax(self.t, 1)
+                    tf.argmax(t, 1)
                 ), dtype)
             )
 
@@ -74,25 +89,38 @@ class SparsemaxRegression:
     def reset(self):
         self._sess.run(self._reset)
 
-    def update(self, inputs, targets):
-        self._sess.run(self._train, {
-            self.x: inputs,
-            self.t: targets
-        })
+    def update(self, inputs, targets, epochs=1):
+        if self.fast and epochs > 1:
+            self._sess.run([
+                self.x_var.initializer,
+                self.t_var.initializer
+            ], feed_dict={
+                self.x: inputs,
+                self.t: targets
+            })
+
+            for _ in range(epochs):
+                self._sess.run(self._train)
+        else:
+            for _ in range(epochs):
+                self._sess.run(self._train, {
+                    self.x_init: inputs,
+                    self.t_init: targets
+                })
 
     def loss(self, inputs, targets):
         return self._sess.run(self._loss, {
-            self.x: inputs,
-            self.t: targets
+            self.x_init: inputs,
+            self.t_init: targets
         })
 
     def predict(self, inputs):
         return self._sess.run(self._prediction, {
-            self.x: inputs
+            self.x_init: inputs
         })
 
     def error(self, inputs, targets):
         return self._sess.run(self._error, {
-            self.x: inputs,
-            self.t: targets
+            self.x_init: inputs,
+            self.t_init: targets
         })

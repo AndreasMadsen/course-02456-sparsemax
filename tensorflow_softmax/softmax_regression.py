@@ -1,4 +1,3 @@
-from tensorflow_python.sparsemax_tf_ops import sparsemax_op, sparsemax_loss_op
 import tensorflow as tf
 import scipy
 import math
@@ -14,16 +13,30 @@ def initializeW(input_size, output_size, random_state):
 
 
 class SoftmaxRegression:
-    def __init__(self, input_size, output_size,
+    def __init__(self, input_size, output_size, observations=None,
                  regualizer=1, learning_rate=1e-2,
                  random_state=None, dtype=tf.float64):
         self.name = 'softmax - tensorflow'
+        self.fast = observations is not None
+
         self.graph = tf.Graph()
 
         with self.graph.as_default():
             # setup inputs
-            self.x = tf.placeholder(dtype, [None, input_size], name='x')
-            self.t = tf.placeholder(dtype, [None, output_size], name='t')
+            x = self.x_init = self.x = tf.placeholder(
+                dtype, [observations, input_size], name='x'
+            )
+            t = self.t_init = self.t = tf.placeholder(
+                dtype, [observations, output_size], name='t'
+            )
+
+            if observations is not None:
+                x = self.x_init = self.x_var = tf.Variable(
+                    self.x, trainable=False, collections=[]
+                )
+                t = self.t_init = self.t_var = tf.Variable(
+                    self.t, trainable=False, collections=[]
+                )
 
             # setup variables
             W = tf.Variable(
@@ -39,12 +52,12 @@ class SoftmaxRegression:
             self._reset = tf.initialize_all_variables()
 
             # setup model
-            logits = tf.matmul(self.x, W) + b
+            logits = tf.matmul(x, W) + b
             self._prediction = tf.nn.softmax(logits, name=None)
 
             # setup loss
             self._loss = tf.reduce_mean(
-                tf.nn.softmax_cross_entropy_with_logits(logits, self.t)
+                tf.nn.softmax_cross_entropy_with_logits(logits, t)
             ) + regualizer * (tf.nn.l2_loss(W) + tf.nn.l2_loss(b))
 
             # setup train function
@@ -56,7 +69,7 @@ class SoftmaxRegression:
             self._error = tf.reduce_mean(
                 tf.cast(tf.not_equal(
                     tf.argmax(self._prediction, 1),
-                    tf.argmax(self.t, 1)
+                    tf.argmax(t, 1)
                 ), dtype)
             )
 
@@ -73,11 +86,24 @@ class SoftmaxRegression:
     def reset(self):
         self._sess.run(self._reset)
 
-    def update(self, inputs, targets):
-        self._sess.run(self._train, {
-            self.x: inputs,
-            self.t: targets
-        })
+    def update(self, inputs, targets, epochs=1):
+        if self.fast and epochs > 1:
+            self._sess.run([
+                self.x_var.initializer,
+                self.t_var.initializer
+            ], feed_dict={
+                self.x: inputs,
+                self.t: targets
+            })
+
+            for _ in range(epochs):
+                self._sess.run(self._train)
+        else:
+            for _ in range(epochs):
+                self._sess.run(self._train, {
+                    self.x_init: inputs,
+                    self.t_init: targets
+                })
 
     def loss(self, inputs, targets):
         return self._sess.run(self._loss, {

@@ -28,6 +28,7 @@ def results(regressors, datasets, epochs=1000, n_splits=5):
         for regressor_i, regressor in enumerate(regressors):
             # intialize model
             regression = regressor(
+                observations=dataset.observations,
                 input_size=dataset.input_size,
                 output_size=dataset.output_size,
                 random_state=42,

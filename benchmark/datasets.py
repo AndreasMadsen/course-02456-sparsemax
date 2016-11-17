@@ -6,6 +6,8 @@ from sklearn.preprocessing import LabelBinarizer
 class _AbstractDataset:
     def __init__(self, inputs, targets,
                  regualizer=1e-1, learning_rate=1e-2, name=None):
+        self.observations = inputs.shape[0]
+
         self.input_size = inputs.shape[1]
         self.inputs = inputs
 
