@@ -19,7 +19,7 @@ def initializeW(input_size, output_size, random_state):
 
 class SparsemaxRegression:
     def __init__(self, input_size, output_size, observations=None,
-                 regualizer=1e-1, learning_rate=1e-2,
+                 regualizer=1e-1, learning_rate=None,
                  random_state=None, dtype=tf.float64):
         self.name = 'TF Numpy'
         self.fast = observations is not None
@@ -54,9 +54,6 @@ class SparsemaxRegression:
                 name='b', dtype=dtype
             )
 
-            # setup init op
-            self._reset = tf.initialize_all_variables()
-
             # setup model
             logits = tf.matmul(x, W) + b
             self._prediction = sparsemax(logits)
@@ -67,9 +64,7 @@ class SparsemaxRegression:
             ) + regualizer * (tf.nn.l2_loss(W) + tf.nn.l2_loss(b))
 
             # setup train function
-            self._train = tf.train.GradientDescentOptimizer(
-                learning_rate
-            ).minimize(self._loss)
+            self._train = tf.train.AdamOptimizer().minimize(self._loss)
 
             # setup error function
             self._error = tf.reduce_mean(
@@ -78,6 +73,9 @@ class SparsemaxRegression:
                     tf.argmax(t, 1)
                 ), dtype)
             )
+
+            # setup init op
+            self._reset = tf.initialize_all_variables()
 
     def __enter__(self):
         # create session and reset variables

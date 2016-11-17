@@ -44,7 +44,8 @@ def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
             with regression as model:
                 evaluator = ModelEvaluator(
                     model, dataset,
-                    random_state=42, epochs=epochs,
+                    epochs=min(epochs, dataset.epochs),
+                    random_state=42,
                     verbose=verbose
                 )
                 missrates = evaluator.all_folds(

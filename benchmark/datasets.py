@@ -22,7 +22,7 @@ if shutil.which("unrar") is None:
 class _AbstractDataset:
     def __init__(self, inputs, targets,
                  stratified=True,
-                 regualizer=1e-1, learning_rate=1e-2,
+                 regualizer=1e-1, learning_rate=1e-2, epochs=1000,
                  name=None):
         self.observations = inputs.shape[0]
 
@@ -35,6 +35,7 @@ class _AbstractDataset:
         self.stratified = stratified
         self.regualizer = regualizer
         self.learning_rate = learning_rate
+        self.epochs = epochs
 
         self.name = type(self).__name__ if name is None else name
 
@@ -46,6 +47,7 @@ class MNIST(_AbstractDataset):
         super().__init__(
             digits.data,
             LabelBinarizer().fit_transform(digits.target),
+            learning_rate=1e-3, epochs=100,
             stratified=True
         )
 
