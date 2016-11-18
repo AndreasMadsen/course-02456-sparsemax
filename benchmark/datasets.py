@@ -44,9 +44,12 @@ class MNIST(_AbstractDataset):
     def __init__(self):
         digits = datasets.fetch_mldata('MNIST original', data_home=data_home)
 
+        permute = np.random.RandomState(42).permutation(digits.data.shape[0])
+        sub = permute[0:60000]
+
         super().__init__(
-            digits.data,
-            LabelBinarizer().fit_transform(digits.target),
+            digits.data[sub],
+            LabelBinarizer().fit_transform(digits.target[sub]),
             learning_rate=1e-3, epochs=100,
             stratified=True
         )
