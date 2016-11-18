@@ -33,7 +33,7 @@ class ModelEvaluator:
         # prediction on test data
         target = t_test
         predict = self.model.predict(x_test)
-        divergence = np.mean(_jensen_shannon_divergence(target, predict))
+        divergence = np.mean(_jensen_shannon_divergence(predict, target))
 
         if self.verbose:
             print('      %d: %f' % (fold, divergence))
@@ -59,5 +59,10 @@ class ModelEvaluator:
 
 
 def _jensen_shannon_divergence(p, q):
+    # p needs to be sparse, otherwise np.log(1e-1000) will be inf.
+    p = p.astype(np.float64)
+    p[p < 1e-30] = 0
+    p /= np.sum(p, axis=1)[:, np.newaxis]
+
     m = 0.5 * (p.T + q.T)
     return 0.5 * (entropy(p.T, m) + entropy(q.T, m))
