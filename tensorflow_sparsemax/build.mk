@@ -13,7 +13,9 @@ tensorflow_sparsemax/kernel/sparsemax_loss.cu.o: tensorflow_sparsemax/kernel/spa
 # user friendly targets
 sparsemax-all: sparsemax-test sparsemax-lint
 
-sparsemax-test: tensorflow_sparsemax/kernel/sparsemax.so tensorflow_sparsemax/kernel/sparsemax_loss.so
+sparsemax-build: tensorflow_sparsemax/kernel/sparsemax.so tensorflow_sparsemax/kernel/sparsemax_loss.so
+
+sparsemax-test: sparsemax-build
 	nosetests --nologcapture -v -s tensorflow_sparsemax/test/test_*.py
 
 sparsemax-lint:

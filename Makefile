@@ -49,6 +49,7 @@ endif
 # User friendly rules
 #
 all: reference-all square-all sparsemax-all sparsemax-python-all softmax-all benchmark-all
+build: square-build sparsemax-build
 test: reference-test square-test sparsemax-test sparsemax-python-test softmax-test
 lint: reference-lint square-lint sparsemax-lint sparsemax-python-lint softmax-lint benchmark-lint
 
