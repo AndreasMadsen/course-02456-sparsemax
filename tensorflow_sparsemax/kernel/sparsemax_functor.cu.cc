@@ -229,7 +229,7 @@ struct Sparsemax<GPUDevice, T> {
     // Put results in output as the the sorted and cumsum needs to be used
     // together.
     Eigen::internal::SumReducer<T> reducer;
-    output.device(d) = temp.scan(1, reducer, false).eval();
+    output.device(d) = temp.scan(1, reducer, false);
 
     // Calculate threshold used in support calculation.
     // Replace sorted matrix, with the threshold booleans.
@@ -238,7 +238,7 @@ struct Sparsemax<GPUDevice, T> {
     // Sum each row, to get the support index.
     // This will reuse the temporary matrix, which is larger than required,
     // but the results will just be stored as if it was a flat vector.
-    temp.device(d) = temp.sum(along_class).eval();
+    temp.device(d) = temp.sum(along_class);
 
     // Calculate tau
     // Overwrites temp results with tau(z), again this just uses temp

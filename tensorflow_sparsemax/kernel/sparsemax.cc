@@ -64,6 +64,10 @@ class SparsemaxOp : public OpKernel {
       OP_REQUIRES_OK(context, context->allocate_temp(DataTypeToEnum<T>::value,
                                                      logits_in.shape(),
                                                      &temp_sorted));
+    } else {
+      OP_REQUIRES_OK(context, context->allocate_temp(DataTypeToEnum<T>::value,
+                                                     TensorShape({0, 0}),
+                                                     &temp_sorted));
     }
 
     // Setup data view
