@@ -16,10 +16,11 @@ def initializeW(input_size, output_size, random_state):
 
 class SparsemaxRegression:
     def __init__(self, input_size, output_size, observations=None,
-                 regualizer=1e-1, learning_rate=None,
+                 regualizer=1e-1, learning_rate=None, cpu_only=False,
                  random_state=None, dtype=tf.float64):
         self.name = 'TF Native'
         self.fast = observations is not None
+        self.cpu_only = cpu_only
 
         self.graph = tf.Graph()
 
@@ -76,7 +77,10 @@ class SparsemaxRegression:
 
     def __enter__(self):
         # create session and reset variables
-        self._sess = tf.Session(graph=self.graph)
+        config = None
+        if self.cpu_only:
+            config = tf.ConfigProto(device_count={'GPU': 0})
+        self._sess = tf.Session(graph=self.graph, config=config)
         self._sess.run(self._reset)
         return self
 
