@@ -8,6 +8,8 @@ from python_reference import sparsemax_loss
 
 
 class SparsemaxRegression:
+    transform_type = 'sparsemax'
+
     def __init__(self, input_size, output_size, observations=None,
                  regualizer=1e-1, learning_rate=1e-2,
                  random_state=None):

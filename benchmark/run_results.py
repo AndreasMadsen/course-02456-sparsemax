@@ -30,11 +30,12 @@ def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
 
         for regressor_i, Regressor in enumerate(regressors):
             # intialize model
+            regualizer = getattr(dataset.regualizer, Regressor.transform_type)
             regression = Regressor(
                 input_size=dataset.input_size,
                 output_size=dataset.output_size,
                 random_state=42,
-                regualizer=dataset.regualizer,
+                regualizer=regualizer,
                 learning_rate=dataset.learning_rate
             )
             col_names[regressor_i] = regression.name
