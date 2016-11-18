@@ -37,10 +37,10 @@ def to_dataframe(data, col_names, row_names, regualizer_values):
         0.95, data.shape[3] - 1, loc=mean, scale=sem
     )
 
-    iterables = [col_names, row_names, regualizer_values]
+    iterables = [row_names, col_names, regualizer_values]
     index = pd.MultiIndex.from_product(
         iterables,
-        names=['regressors', 'datasets', 'regualizer']
+        names=['datasets', 'regressors', 'regualizer']
     )
 
     # http://stackoverflow.com/questions/36853594
