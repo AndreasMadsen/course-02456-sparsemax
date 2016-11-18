@@ -2,11 +2,6 @@ import tensorflow as tf
 import scipy
 import math
 
-from tensorflow_python.sparsemax_tf_ops \
-    import sparsemax_op as sparsemax
-from tensorflow_python.sparsemax_tf_ops \
-    import sparsemax_loss_op as sparsemax_loss
-
 
 def initializeW(input_size, output_size, random_state):
     W = scipy.stats.truncnorm.rvs(
@@ -17,11 +12,11 @@ def initializeW(input_size, output_size, random_state):
     return W
 
 
-class SparsemaxRegression:
+class SoftmaxRegression:
     def __init__(self, input_size, output_size, observations=None,
-                 regualizer=1e-1, learning_rate=None,
+                 regualizer=1, learning_rate=None,
                  random_state=None, dtype=tf.float64):
-        self.name = 'TF Numpy'
+        self.name = 'Softmax'
         self.fast = observations is not None
 
         self.graph = tf.Graph()
@@ -48,7 +43,6 @@ class SparsemaxRegression:
                 initializeW(input_size, output_size, random_state),
                 name='W', dtype=dtype
             )
-
             b = tf.Variable(
                 tf.zeros([output_size], dtype=dtype),
                 name='b', dtype=dtype
@@ -56,11 +50,11 @@ class SparsemaxRegression:
 
             # setup model
             logits = tf.matmul(x, W) + b
-            self._prediction = sparsemax(logits)
+            self._prediction = tf.nn.softmax(logits, name=None)
 
             # setup loss
             self._loss = tf.reduce_mean(
-                sparsemax_loss(logits, self._prediction, t)
+                tf.nn.softmax_cross_entropy_with_logits(logits, t)
             ) + regualizer * (tf.nn.l2_loss(W) + tf.nn.l2_loss(b))
 
             # setup train function
@@ -111,17 +105,17 @@ class SparsemaxRegression:
 
     def loss(self, inputs, targets):
         return self._sess.run(self._loss, {
-            self.x_init: inputs,
-            self.t_init: targets
+            self.x: inputs,
+            self.t: targets
         })
 
     def predict(self, inputs):
         return self._sess.run(self._prediction, {
-            self.x_init: inputs
+            self.x: inputs
         })
 
     def error(self, inputs, targets):
         return self._sess.run(self._error, {
-            self.x_init: inputs,
-            self.t_init: targets
+            self.x: inputs,
+            self.t: targets
         })

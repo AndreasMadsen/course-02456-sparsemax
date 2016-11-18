@@ -48,15 +48,16 @@ endif
 #
 # User friendly rules
 #
-all: reference-all square-all sparsemax-all sparsemax-python-all
-test: reference-test square-test sparsemax-test sparsemax-python-test
-lint: reference-lint square-lint sparsemax-lint sparsemax-python-lint benchmark-lint
+all: reference-all square-all sparsemax-all sparsemax-python-all softmax-all benchmark-all
+test: reference-test square-test sparsemax-test sparsemax-python-test softmax-test
+lint: reference-lint square-lint sparsemax-lint sparsemax-python-lint softmax-lint benchmark-lint
 
 include benchmark/build.mk
 include tensorflow_sparsemax/build.mk
 include tensorflow_square/build.mk
 include python_reference/build.mk
 include tensorflow_python/build.mk
+include tensorflow_softmax/build.mk
 
 clean:
 	rm -f **/**/*.o

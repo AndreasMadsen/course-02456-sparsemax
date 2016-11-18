@@ -8,9 +8,10 @@ from python_reference import sparsemax_loss
 
 
 class SparsemaxRegression:
-    def __init__(self, input_size, output_size,
+    def __init__(self, input_size, output_size, observations=None,
                  regualizer=1e-1, learning_rate=1e-2,
                  random_state=None):
+        self.name = 'Numpy'
         self.random_state = random_state
 
         # intialize weights
@@ -46,11 +47,12 @@ class SparsemaxRegression:
             np.sum(loss_grad, axis=0) / n
         )
 
-    def update(self, x, t):
-        (dW, db) = self.gradient(x, t)
+    def update(self, x, t, epochs=1):
+        for _ in range(epochs):
+            (dW, db) = self.gradient(x, t)
 
-        self.W += - self.learning_rate * (self.regualizer * self.W + dW)
-        self.b += - self.learning_rate * (self.regualizer * self.b + db)
+            self.W += - self.learning_rate * (self.regualizer * self.W + dW)
+            self.b += - self.learning_rate * (self.regualizer * self.b + db)
 
     def loss(self, x, t):
         l2 = np.linalg.norm(self.W, 'fro')**2 + np.linalg.norm(self.b, 2)**2
