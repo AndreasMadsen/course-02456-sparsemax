@@ -15,7 +15,7 @@ tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
 
 
 def hyperparameter(regressors, datasets, regualizer_values,
-                   epochs=100, n_splits=5, verbose=False):
+                   epochs=1000, n_splits=5, verbose=False):
 
     col_names = [''] * len(regressors)
     row_names = [''] * len(datasets)
