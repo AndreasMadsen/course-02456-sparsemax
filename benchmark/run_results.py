@@ -28,13 +28,14 @@ def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
         if verbose:
             print(dataset.name)
 
-        for regressor_i, regressor in enumerate(regressors):
+        for regressor_i, Regressor in enumerate(regressors):
             # intialize model
-            regression = regressor(
+            regualizer = getattr(dataset.regualizer, Regressor.transform_type)
+            regression = Regressor(
                 input_size=dataset.input_size,
                 output_size=dataset.output_size,
                 random_state=42,
-                regualizer=dataset.regualizer,
+                regualizer=regualizer,
                 learning_rate=dataset.learning_rate
             )
             col_names[regressor_i] = regression.name
@@ -48,11 +49,11 @@ def results(regressors, datasets, epochs=1000, n_splits=5, verbose=False):
                     random_state=42,
                     verbose=verbose
                 )
-                missrates = evaluator.all_folds(
+                divergence = evaluator.all_folds(
                     n_splits=n_splits,
                     stratified=dataset.stratified
                 )
-                results[dataset_i, regressor_i, :] = missrates
+                results[dataset_i, regressor_i, :] = divergence
 
     return (results, col_names, row_names)
 

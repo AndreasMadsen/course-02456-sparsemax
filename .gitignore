@@ -5,10 +5,11 @@ __pycache__
 *.aux
 *.bcf
 *.log
-*.pdf
 *.run*
 *.out
 *.synctex*
 *.swp
 
 data/
+latex/report/main.pdf
+latex/synopsis/project_synopsis.pdf

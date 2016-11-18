@@ -1,4 +1,5 @@
 
+import collections
 import os
 import os.path as path
 import sys
@@ -18,11 +19,14 @@ data_home = path.join(thisdir, '..', 'data')
 if shutil.which("unrar") is None:
     raise EnvironmentError("unrar is not installed")
 
+Regualizer = collections.namedtuple('Regualizer', ['softmax', 'sparsemax'])
+
 
 class _AbstractDataset:
     def __init__(self, inputs, targets,
                  stratified=True,
-                 regualizer=1e-1, learning_rate=1e-2, epochs=1000,
+                 regualizer=Regualizer(softmax=1e-1, sparsemax=1e-1),
+                 learning_rate=1e-2, epochs=1000,
                  name=None):
         self.observations = inputs.shape[0]
 
@@ -50,7 +54,8 @@ class MNIST(_AbstractDataset):
         super().__init__(
             digits.data[sub],
             LabelBinarizer().fit_transform(digits.target[sub]),
-            learning_rate=1e-3, epochs=100,
+            regualizer=Regualizer(softmax=1e-7, sparsemax=1e-6),
+            epochs=100,
             stratified=True
         )
 
@@ -62,6 +67,7 @@ class Iris(_AbstractDataset):
         super().__init__(
             iris.data,
             LabelBinarizer().fit_transform(iris.target),
+            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-8),
             stratified=True
         )
 
@@ -126,18 +132,30 @@ def _mulan(name):
 class Scene(_AbstractDataset):
     def __init__(self):
         inputs, targets = _mulan('scene')
-        super().__init__(inputs, targets, stratified=False)
+        super().__init__(
+            inputs, targets,
+            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-4),
+            stratified=False
+        )
 
 
 class Emotions(_AbstractDataset):
     def __init__(self):
         inputs, targets = _mulan('emotions')
-        super().__init__(inputs, targets, stratified=False)
+        super().__init__(
+            inputs, targets,
+            regualizer=Regualizer(softmax=1e-2, sparsemax=1e-2),
+            stratified=False
+        )
 
 
 class CAL500(_AbstractDataset):
     def __init__(self):
         inputs, targets = _mulan('CAL500')
-        super().__init__(inputs, targets, stratified=False)
+        super().__init__(
+            inputs, targets,
+            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-1),
+            stratified=False
+        )
 
 all_datasets = [MNIST, Iris, Scene, Emotions, CAL500]

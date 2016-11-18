@@ -27,9 +27,9 @@ def timings(regressors, datasets, epochs=100, iterations=10, verbose=False):
         if verbose:
             print(dataset.name)
 
-        for regressor_i, regressor in enumerate(regressors):
+        for regressor_i, Regressor in enumerate(regressors):
             # intialize model
-            regression = regressor(
+            regression = Regressor(
                 observations=dataset.observations,
                 input_size=dataset.input_size,
                 output_size=dataset.output_size,
