@@ -134,7 +134,7 @@ class Scene(_AbstractDataset):
         inputs, targets = _mulan('scene')
         super().__init__(
             inputs, targets,
-            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-8),
+            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-4),
             stratified=False
         )
 
@@ -154,7 +154,7 @@ class CAL500(_AbstractDataset):
         inputs, targets = _mulan('CAL500')
         super().__init__(
             inputs, targets,
-            regualizer=Regualizer(softmax=1e-3, sparsemax=1e-0),
+            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-1),
             stratified=False
         )
 
