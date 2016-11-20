@@ -1,36 +1,56 @@
 \section{Results}
-
+Next we evaluate the sparsemax transformation on a series of benchmark datasets using our four different implementations. We use a  model equivalent to a logistic regression, but where the activation function at the output layer is sparsemax rather than softmax. For comparison we report the softmax results as well. Our four different implementations are refered to in the following as follows:
+\begin{itemize}
+\item Softmax: A TensorFlow implementation of Softmax Regression
+\item Numpy: A Numpy implementation of Sparsemax Regression
+\item TF Numpy: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented using only Numpy
+\item TF CPU: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented in C++. This version runs only at the CPU.
+\item TF GPU: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented in C++. This version runs only at the CPU.
+\end{itemize}
+For the sake of timing comparison we will compare all five implementations, while for the performance only the TensorFlow CPU version of Sparsemax will be compared with the Softmax implementation as the results are equivalent for all Sparsemax implementations as expected.
+\subsection{Label estimation}
+We use five well-known benchmark datasets shown in Table \ref{tab:datasets}. The digit dataset MNIST and flower dataset Iris are multi-class classification, while the Scene, Emotions and CAL500 datasets are multi-label classification. \footnote{In multi-class classification the classes are mutually exclusive, while in the multi-label case several labels can be associated with one observation reflecting a relation between the labels.} We report the Jensen-Shannon divergence betweent the predicted and target distributions:
+\begin{equation}
+\mathbf{JS(q,p)}:=\frac{1}{2}\mathbf{KL}(\mathbf{q}||\frac{\mathbf{q}+\mathbf{p}}{2})+\frac{1}{2}\mathbf{KL}(\mathbf{p}||\frac{\mathbf{q}+\mathbf{p}}{2})
+\end{equation}
+Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ the Kullbach-leibler distance. For all the classifiers we use a L2 regualizer where the regualization constant used can be seen in Table \ref{tab:hyperparameters}. These have been chosen using cross-validation, where the resulting experiments are shown in Figure \ref{fig:hyperparameters}.
 
 \begin{table}[H]
 \centering
 \input{tables/descriptions.tex}
-\caption{Datasets, explain}
+\caption{Statistics for the five benchmark datasets used.}
+\label{tab:datasets}
 \end{table}
 
 
 \begin{table}[H]
 \centering
 \input{tables/hyperparameter.tex}
-\caption{Hyperparameter, explain}
+\caption{Values for the regualizers used in both classifiers.}
+\label{tab:hyperparameters}
+\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/hyperparameter.pdf}
+\caption{JS divergence using a range of regualizers on all five datasets for the two regressors.}
+\label{fig:hyperparameters}.
+\end{figure}
+
+\begin{table}[H]
+\centering
+\input{tables/results.tex}
+\caption{$\mathbf{JS}$ divergence for the five benchmark datasets and the Sparsemax Classifier as well as the Softmax classifier.}
 \end{table}
 
 
 \begin{table*}
 \centering
 \input{tables/timings.tex}
-\caption{Timings, explain}
+\caption{Relative time with associated confidence intervals.}
 \end{table*}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=\columnwidth]{figures/hyperparameter.pdf}
-\caption{Hyperparameter, explain}
-\end{figure}
 
 
-\begin{table}[H]
-\centering
-\input{tables/results.tex}
-\caption{Results, explain}
-\end{table}
+
 
