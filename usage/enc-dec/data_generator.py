@@ -28,14 +28,14 @@ def print_valid_characters():
     print(l)
 
 ninput_chars = len(valid_characters)
-def get_batch(batch_size=100, min_digits = 3, max_digits=3):
+def get_batch(batch_size=100, min_digits = 3, max_digits=3, random_seed=42):
     '''
     Generates random sequences of integers and translates them to text i.e. 1->'one'.
     :param batch_size: number of samples to return
     :param min_digits: minimum length of target
     :param max_digits: maximum length of target
     '''
-
+    np.random.seed(random_seed)
     text_inputs = []
     int_inputs = []
     text_targets_in = []
