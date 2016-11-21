@@ -1,26 +1,29 @@
 \section{Results}
-Next we evaluate the sparsemax transformation on a series of benchmark datasets using our four different implementations. We use a  model equivalent to a logistic regression, but where the activation function at the output layer is sparsemax rather than softmax. For comparison we report the softmax results as well. Our four different implementations are refered to in the following as follows:
+Next the sparsemax transformation is evaluated on a series of benchmark datasets using four different implementations. The model is equivalent to a multivariate logistic regression, but where the activation function at the output layer is sparsemax rather than softmax. \todo{Perhaps we should just write it in the theory section.} For comparison we report the softmax results as well. The four different implementations are refered to as:
 \begin{itemize}
-\item Softmax: A TensorFlow implementation of Softmax Regression
-\item Numpy: A Numpy implementation of Sparsemax Regression
-\item TF Numpy: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented using only Numpy
-\item TF CPU: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented in C++. This version runs only at the CPU.
-\item TF GPU: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented in C++. This version runs only at the CPU.
+\item Softmax: A TensorFlow implementation of Softmax Regression.
+\item Numpy: A pure Numpy implementation of Sparsemax Regression.
+\item TF Numpy: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented using only Numpy.
+\item TF CPU: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented in C++ for the CPU.
+\item TF GPU: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented in C++ and CUDA for the GPU.
 \end{itemize}
-For the sake of timing comparison we will compare all five implementations, while for the performance only the TensorFlow CPU version of Sparsemax will be compared with the Softmax implementation as the results are equivalent for all Sparsemax implementations as expected.
+For the sake of performance comparison all five implementations are used. For the performance\todo{performance is a bit ambiguous} only the TensorFlow C++ version of Sparsemax and Softmax are used, as the results are the same for all Sparsemax implementations.
+
 \subsection{Label estimation}
-We use five well-known benchmark datasets shown in Table \ref{tab:datasets}.  The digit dataset MNIST and flower dataset Iris are multi-class classification, while the Scene, Emotions and CAL500 datasets are multi-label classification. \footnote{In multi-class classification the classes are mutually exclusive, while in the multi-label case several labels can be associated with one observation reflecting a relation between the labels.} 
+Five well-known benchmark datasets are used, as shown in Table \ref{tab:datasets}. The digit dataset MNIST and flower dataset Iris are multi-class classification, while the Scene, Emotions and CAL500 datasets are multi-label classification.\footnote{In multi-class classification the classes are mutually exclusive, while in the multi-label case several labels can be associated with one observation reflecting a relation between the labels.} 
 \begin{table}[H]
 \centering
 \input{tables/descriptions.tex}
 \caption{Statistics for the five benchmark datasets used.}
 \label{tab:datasets}
 \end{table}
-For comparison of performance we report the Jensen-Shannon divergence betweent the predicted and target distributions:
-\begin{equation}
-\mathbf{JS(q,p)}:=\frac{1}{2}\mathbf{KL}(\mathbf{q}||\frac{\mathbf{q}+\mathbf{p}}{2})+\frac{1}{2}\mathbf{KL}(\mathbf{p}||\frac{\mathbf{q}+\mathbf{p}}{2})
-\end{equation}
-Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ the Kullbach-Leibler distance. For all the classifiers we use a L2 regualizer where the regualization constant used can be seen in Table \ref{tab:hyperparameters}. We tuned the hyperparemeter using a stratified 5-split cross-validation (?), where the resulting experiments are shown in Figure \ref{fig:hyperparameters}. We optimized the TensorFlow implementations using the Adam algorithm with a learning rate of 0.001 and $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$ 
+
+For comparison of performance the Jensen-Shannon divergence betweent the predicted and target distributions is reported.
+\begin{equation*}
+\mathbf{JS(q,p)}:=\frac{1}{2}\mathbf{KL}\left(\mathbf{q}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)+\frac{1}{2}\mathbf{KL}\left(\mathbf{p}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)
+\end{equation*}
+
+Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For all the classifiers a L2 regualizer is used, the regualization constants used can be seen in Table \ref{tab:hyperparameters}. The hyperparemeter where tuned using a stratified 5-split cross-validation (TODO ?) \todo{only stratified for some datasets}, where the resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models where optimized using the Adam algorithm with default parameters \todo{learning rate was only for numpy implementation} a learning rate of 0.001 and $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$ 
 \begin{table}[H]
 \centering
 \input{tables/hyperparameter.tex}
@@ -29,27 +32,32 @@ Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respe
 \end{table}
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\columnwidth]{figures/hyperparameter.pdf}
+	\includegraphics[scale=1]{figures/hyperparameter.pdf}
 \caption{JS divergence using a range of regualizers on all five datasets for the two regressors.}
 \label{fig:hyperparameters}.
 \end{figure}
-In Table \ref{tab:results} we see the resulting performance on the five datasets. The Softmax and Sparsemax classifier are very much alike in terms of perfomance and the Sparsemax classifier only has significant better performance on the Iris dataset.
+
+The resulting performance for the five datasets is showen in Table \ref{tab:results}. The Softmax and Sparsemax classifier are very much alike in terms of perfomance and the Sparsemax classifier only has significant better performance on the Iris dataset.
 \begin{table}[H]
 \centering
 \input{tables/results.tex}
 \caption{JS divergence for the five benchmark datasets and the Sparsemax Classifier as well as the Softmax classifier.}
 \label{tab:results}
 \end{table}
-In our implementations we have used four different approaches, which all result in different performance in terms of timings. In Table \ref{tab:timings} we show the relative time performance for our four implementations and compare these with the native TensorFlow implementation of Softmax. 
+
 \begin{table*}
 \centering
 \input{tables/timings.tex}
-\caption{Relative time with associated confidence intervals.}
+\caption{Time in seconds with associated confidence intervals.}
 \label{tab:timings}
 \end{table*}
-For the large dataset, MNIST, we find that the GPU implementation siginficantly outperforms all other implementations as expected, while the Numpy implementation runs significantly slower than the three TensorFlow implementations. For the Iris dataset, which is considerably smaller, the Numpy and CPU version of TensorFlow outperforms both the GPU and Numpy version of Tensorflow. Both The Numpy version of TensorFlow and the GPU version encours a large overhead, which, as expected, slows the implementation. Compared to the Softmax (on GPU?) the GPU version of TensorFlow is significantly slower, but not by much.
+
+\subsection{Computational performance}
+The four implementations where benchmarked using the datasets from Table \ref{tab:datasets}. In Table \ref{tab:timings} the the time performance is shown and compared with the native TensorFlow Softmax implementation.
+
+For the large dataset, MNIST, the GPU implementation siginficantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version encours a large overhead, which, as expected, slows the implementation. Compared to the Softmax (TODO on GPU?) the GPU version of TensorFlow is significantly slower, but not by much.
+
+\todo[inline]{missing some information about the number of epochs.}
+
 \subsection{Encoder-decoder with a sparse attention mechanism}
-
-
-
 
