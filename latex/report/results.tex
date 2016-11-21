@@ -1,5 +1,5 @@
 \section{Results}
-Next the sparsemax transformation is evaluated on a series of benchmark datasets using four different implementations. The model is equivalent to a multivariate logistic regression, but where the activation function at the output layer is sparsemax rather than softmax. \todo{Perhaps we should just write it in the theory section.} For comparison we report the softmax results as well. The four different implementations are refered to as:
+Next the sparsemax transformation is evaluated on a series of benchmark datasets using four different implementations. The model is equivalent to a multivariate logistic regression, but where the activation function at the output layer is sparsemax rather than softmax. \todo{Perhaps we should just write it in the theory section.} For comparison we report the softmax results as well. The four different implementations plus the reference softmax implementation are refered to as:
 \begin{itemize}
 \item Softmax: A TensorFlow implementation of Softmax Regression.
 \item Numpy: A pure Numpy implementation of Sparsemax Regression.
@@ -17,13 +17,12 @@ Five well-known benchmark datasets are used, as shown in Table \ref{tab:datasets
 \caption{Statistics for the five benchmark datasets used.}
 \label{tab:datasets}
 \end{table}
-
 For comparison of performance the Jensen-Shannon divergence betweent the predicted and target distributions is reported.
 \begin{equation*}
 \mathbf{JS(q,p)}:=\frac{1}{2}\mathbf{KL}\left(\mathbf{q}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)+\frac{1}{2}\mathbf{KL}\left(\mathbf{p}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)
 \end{equation*}
 
-Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For all the classifiers a L2 regualizer is used, the regualization constants used can be seen in Table \ref{tab:hyperparameters}. The hyperparemeter where tuned using a stratified 5-split cross-validation (TODO ?) \todo{only stratified for some datasets}, where the resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models where optimized using the Adam algorithm with default parameters \todo{learning rate was only for numpy implementation} a learning rate of 0.001 and $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$ 
+Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For all the classifiers a L2 regualizer is used, the regualization constants used can be seen in Table \ref{tab:hyperparameters}. The hyperparemeter where tuned using a stratified 5-split cross-validation (TODO ?) \todo{only stratified for some datasets}, where the resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models where optimized using the Adam algorithm with default parameters \todo{learning rate was only for numpy implementation} a learning rate of 0.001 and $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$ and the Numpy implementation used Gradient Descent with a learning rate of $1\mathrm{e}{-2}$.
 \begin{table}[H]
 \centering
 \input{tables/hyperparameter.tex}
@@ -55,7 +54,7 @@ The resulting performance for the five datasets is showen in Table \ref{tab:resu
 \subsection{Computational performance}
 The four implementations where benchmarked using the datasets from Table \ref{tab:datasets}. In Table \ref{tab:timings} the the time performance is shown and compared with the native TensorFlow Softmax implementation.
 
-For the large dataset, MNIST, the GPU implementation siginficantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version encours a large overhead, which, as expected, slows the implementation. Compared to the Softmax (TODO on GPU?) the GPU version of TensorFlow is significantly slower, but not by much.
+For the large dataset, MNIST, the GPU implementation siginficantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version encours a large overhead, which, as expected, slows the implementation. Compared to the Softmax (TODO on GPU?) the GPU version of TensorFlow is significantly slower, but not by much.
 
 \todo[inline]{missing some information about the number of epochs.}
 
