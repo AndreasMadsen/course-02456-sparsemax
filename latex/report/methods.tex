@@ -98,3 +98,11 @@ where $\mathbf{p} = \mathrm{sparsemax}(\mathbf{z})$. Finally the sparsemax loss 
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \mathbf{1}^T \left( \mathbf{s} \odot \mathbf{p} \odot \left(\mathbf{z} - \tfrac{1}{2} \mathbf{p}\right) + \mathbf{q} \odot \left(\tfrac{1}{2} \mathbf{q} - \mathbf{z}\right)\right)
 \end{equation}
+
+\subsection{Sparsemax Regression}
+We define Sparsemax regression as the equivalent to a multivariate logistic regression, but where the activation function at the output layer is sparsemax rather than softmax and with a L2-regularization on the weights and biases. Thus the minimization problem becomes
+\begin{equation}
+\min_{\mathbf{W},\mathbf{b}} \, \frac{\lambda}{2} (||\mathbf{W}||^2_{F} + ||\mathbf{b}||^2_{F}) + \frac{1}{N} \sum\limits_{i=1}^n \mathcal{L} (\mathbf{W} \mathbf{x}_i + \mathbf{b}; y_i)
+\label{sparsemax-regression}
+\end{equation}
+Where $\mathcal{L} = \mathcal{L}_{\mathrm{sparsemax}}$ defined by \eqref{sparsemax-loss-original} and \eqref{sparsemax-loss-reformulated}.
