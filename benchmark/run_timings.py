@@ -29,12 +29,13 @@ def timings(regressors, datasets, epochs=100, iterations=10, verbose=False):
 
         for regressor_i, Regressor in enumerate(regressors):
             # intialize model
+            regualizer = getattr(dataset.regualizer, Regressor.transform_type)
             regression = Regressor(
                 observations=dataset.observations,
                 input_size=dataset.input_size,
                 output_size=dataset.output_size,
                 random_state=42,
-                regualizer=dataset.regualizer,
+                regualizer=regualizer,
                 learning_rate=dataset.learning_rate
             )
             col_names[regressor_i] = regression.name
