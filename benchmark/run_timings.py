@@ -29,12 +29,13 @@ def timings(regressors, datasets, epochs=100, iterations=10, verbose=False):
 
         for regressor_i, Regressor in enumerate(regressors):
             # intialize model
+            regualizer = getattr(dataset.regualizer, Regressor.transform_type)
             regression = Regressor(
                 observations=dataset.observations,
                 input_size=dataset.input_size,
                 output_size=dataset.output_size,
                 random_state=42,
-                regualizer=dataset.regualizer,
+                regualizer=regualizer,
                 learning_rate=dataset.learning_rate
             )
             col_names[regressor_i] = regression.name
@@ -67,7 +68,7 @@ def main():
         data=data, col_names=col_names, row_names=row_names
     )
 
-    table = SummaryTable(data, col_names, row_names)
+    table = SummaryTable(data, col_names, row_names, format="$%.2f \\pm %.3f$")
     table.save(path.join(tabledir, 'timings.tex'))
 
 if __name__ == "__main__":
