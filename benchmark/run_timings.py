@@ -68,7 +68,7 @@ def main():
         data=data, col_names=col_names, row_names=row_names
     )
 
-    table = SummaryTable(data, col_names, row_names)
+    table = SummaryTable(data, col_names, row_names, format="$%.2f \\pm %.3f$")
     table.save(path.join(tabledir, 'timings.tex'))
 
 if __name__ == "__main__":

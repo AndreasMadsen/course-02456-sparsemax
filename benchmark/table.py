@@ -32,7 +32,8 @@ class Table:
 
 
 class SummaryTable(Table):
-    def __init__(self, content, col_names, row_names):
+    def __init__(self, content, col_names, row_names,
+                 format="$%.2f \\pm %.2f$"):
         # calculate statistics
         mean = np.mean(content, axis=2)
         sem = scipy.stats.sem(content, axis=2)
@@ -42,7 +43,7 @@ class SummaryTable(Table):
 
         formatted = [
             [
-                "$%.2f \\pm %.2f$" % (mean_val, ci_val)
+                format % (mean_val, ci_val)
                 for mean_val, ci_val in zip(mean_row, ci_row)
             ] for mean_row, ci_row in zip(mean, ci)
         ]
