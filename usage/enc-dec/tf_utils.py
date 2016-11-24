@@ -3,24 +3,57 @@ from tensorflow.python.ops import tensor_array_ops
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import math_ops
+#from tensorflow_sparsemax.kernel import sparsemax, sparsemax_loss
 
+# NOTE:
+# importing custom tf kernel containing sparsemax op.
+# assumes existance of a ../../tensorflow_sparsemax/kernel
+# containing a compiled sparsemax kernel
+import os.path as path
+import sys
+
+thisdir = path.dirname(path.realpath("__file__"))
+sys.path.append(path.join(thisdir, '../../tensorflow_sparsemax'))
+
+from kernel import sparsemax, sparsemax_loss
 
 ###
 # custom loss function, similar to tensorflows but uses 3D tensors
 # instead of a list of 2D tensors
-def sequence_loss_tensor(logits, targets, weights, num_classes,
+def sequence_loss_tensor(logits, targets, weights, num_classes, loss_type='softmax',
                          average_across_timesteps=True,
                          softmax_loss_function=None, name=None):
     """Weighted cross-entropy loss for a sequence of logits (per example).
     """
     with ops.op_scope([logits, targets, weights], name, "sequence_loss_by_example"):
-        probs_flat = tf.reshape(logits, [-1, num_classes])
+        logits_flat = tf.reshape(logits, [-1, num_classes])
+        
         targets = tf.reshape(targets, [-1])
-        if softmax_loss_function is None:
+        #print(tf.shape(logits_flat))
+        if loss_type == 'softmax':
+            #print(tf.shape(targets))
             crossent = nn_ops.sparse_softmax_cross_entropy_with_logits(
-                    probs_flat, targets)
+                    logits_flat, targets)
+            print(tf.shape(crossent))
+        elif loss_type == "sparsemax":
+            probs = sparsemax(logits_flat)
+            # need to convert targets to 1 hot encoding
+            
+            sparse_labels = tf.reshape(targets, [-1, 1])
+            derived_size = tf.shape(targets)[0]
+            indices = tf.reshape(tf.range(0, derived_size, 1), [-1, 1])
+            concated = tf.concat(1, [indices, tf.cast(sparse_labels, tf.int32)])
+            outshape = tf.pack([derived_size, num_classes])
+            targets = tf.cast(tf.sparse_to_dense(concated, outshape, 1.0, 0.0), tf.float32)
+            
+            
+            #print(tf.shape(targets))
+            #print(tf.shape(probs))
+            crossent = sparsemax_loss(logits_flat,
+                    probs, targets)
+            #print(tf.shape(crossent))
         else:
-            crossent = softmax_loss_function(probs_flat, targets)
+            raise Exception("unexpected loss_type input")
         crossent = crossent * tf.reshape(weights, [-1])
         crossent = tf.reduce_sum(crossent)
         total_size = math_ops.reduce_sum(weights)
