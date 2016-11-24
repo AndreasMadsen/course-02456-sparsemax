@@ -10,7 +10,7 @@ tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
 
 
 def descriptions(datasets):
-    col_names = ['\\#Features', '\\#Labels', '\\#Train size', '\\#Test size']
+    col_names = ['\\#Features', '\\#Labels', 'Train size', 'Test size']
     row_names = []
     content = []
 
