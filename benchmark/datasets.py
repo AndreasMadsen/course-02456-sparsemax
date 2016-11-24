@@ -31,6 +31,7 @@ class _AbstractDataset:
                  stratified=True,
                  regualizer=Regualizer(softmax=1e-1, sparsemax=1e-1),
                  learning_rate=1e-2, epochs=1000,
+                 multi_class=True,
                  name=None):
         self.input_size = full.inputs.shape[1]
         self.output_size = full.targets.shape[1]
@@ -43,6 +44,7 @@ class _AbstractDataset:
         self.regualizer = regualizer
         self.learning_rate = learning_rate
         self.epochs = epochs
+        self.multi_class = multi_class
 
         self.name = type(self).__name__ if name is None else name
 
@@ -101,7 +103,8 @@ class MNIST(_AbstractDataset):
             test=DataPair(data['test_inputs'], data['test_targets']),
             regualizer=Regualizer(softmax=1e-2, sparsemax=1e-2),
             epochs=100,
-            stratified=True
+            stratified=True,
+            multi_class=False
         )
 
 
@@ -122,7 +125,8 @@ class Iris(_AbstractDataset):
             train=DataPair(train_inputs, train_targets),
             test=DataPair(test_inputs, test_targets),
             regualizer=Regualizer(softmax=1e-8, sparsemax=1e-8),
-            stratified=True
+            stratified=True,
+            multi_class=False
         )
 
 
