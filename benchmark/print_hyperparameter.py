@@ -3,31 +3,47 @@ import _benchmark
 import io
 import sys
 import os.path as path
+import math
 
 import subprocess
 import numpy as np
 import pandas as pd
 import scipy.stats
 
-from table import Table
+from table import PairTable, SummaryTable
 
 thisdir = path.dirname(path.realpath(__file__))
 tabledir = path.join(thisdir, '..', 'latex', 'report', 'tables')
 figuredir = path.join(thisdir, '..', 'latex', 'report', 'figures')
 
 
+def format_lambda(x):
+    exponent = math.floor(math.log10(x))
+    mantissa = x / 10**exponent
+
+    if mantissa != 1:
+        return "$%.2f \\cdot 10^{%d}$" % (mantissa, exponent)
+    else:
+        return "$10^{%d}$" % exponent
+
+
 def format_best(data, regualizer_values):
-    best = regualizer_values[np.argmin(np.mean(data, axis=3), axis=2)]
+    best_index = np.argmin(np.mean(data, axis=3), axis=2)
+    best = regualizer_values[best_index]
 
-    exponent = np.floor(np.log10(best))
-    mantissa = best / 10**exponent
-
-    return [
+    regualizer_table = [
         [
-            "$%.2f \\cdot 10^{%d}$" % (mantissa_value, exponent_value)
-            for mantissa_value, exponent_value in zip(*row)
-        ] for row in zip(mantissa, exponent)
+            format_lambda(best_value) for best_value in best_row
+        ] for best_row in best
     ]
+
+    error_table = SummaryTable.content(data[
+        np.arange(best_index.shape[0])[:, None],
+        np.arange(best_index.shape[1])[None, :],
+        best_index
+    ], format="$%.2f \\pm %.3f$")
+
+    return (regualizer_table, error_table)
 
 
 def to_dataframe(data, col_names, row_names, regualizer_values):
@@ -77,8 +93,11 @@ def main():
     regualizer_values = results['regualizer_values']
 
     # create table
-    content = format_best(data, regualizer_values)
-    table = Table(content, col_names, row_names)
+    regualizer_table, error_table = format_best(data, regualizer_values)
+    table = PairTable(
+        regualizer_table, error_table,
+        col_names, ['$\lambda$', '$\mathbf{JS}$'], row_names
+    )
     table.save(path.join(tabledir, 'hyperparameter.tex'))
 
     # create figure

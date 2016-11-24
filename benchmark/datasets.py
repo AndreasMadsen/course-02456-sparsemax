@@ -99,7 +99,7 @@ class MNIST(_AbstractDataset):
             full=DataPair(data['train_inputs'], data['train_targets']),
             train=DataPair(data['train_inputs'], data['train_targets']),
             test=DataPair(data['test_inputs'], data['test_targets']),
-            regualizer=Regualizer(softmax=1e-7, sparsemax=1e-6),
+            regualizer=Regualizer(softmax=1e-2, sparsemax=1e-2),
             epochs=100,
             stratified=True
         )
@@ -224,7 +224,7 @@ class Scene(_AbstractDataset):
         full, train, test = _mulan('scene', pre_split=True)
         super().__init__(
             full, train, test,
-            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-4),
+            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-3),
             stratified=False
         )
 
@@ -234,7 +234,7 @@ class Emotions(_AbstractDataset):
         full, train, test = _mulan('emotions', pre_split=True)
         super().__init__(
             full, train, test,
-            regualizer=Regualizer(softmax=1e-2, sparsemax=1e-2),
+            regualizer=Regualizer(softmax=1e-2, sparsemax=1e-1),
             stratified=False
         )
 
@@ -244,7 +244,7 @@ class CAL500(_AbstractDataset):
         full, train, test = _mulan('CAL500', pre_split=False)
         super().__init__(
             full, train, test,
-            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-1),
+            regualizer=Regualizer(softmax=1e-8, sparsemax=1e-0),
             stratified=False
         )
 
