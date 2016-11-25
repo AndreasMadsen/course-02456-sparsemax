@@ -14,7 +14,7 @@ Five well-known benchmark datasets are used, as shown in Table \ref{tab:datasets
 \begin{table}[H]
 \centering
 \input{tables/descriptions.tex}
-\caption{Statistics for the five benchmark datasets used.}
+\caption{Summary for the five benchmark datasets used.}
 \label{tab:datasets}
 \end{table}
 For comparison of performance the Jensen-Shannon divergence between the predicted and target distributions is reported.
@@ -26,7 +26,7 @@ Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respe
 \begin{table}[H]
 \centering
 \input{tables/hyperparameter.tex}
-\caption{Values for the regualizers used in both classifiers.}
+\caption{Regualizer values and the corresponding JS divergence for both classifiers. 5-fold cross validation was used in the training data.}
 \label{tab:hyperparameters}
 \end{table}
 \begin{figure}[H]
@@ -36,7 +36,8 @@ Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respe
 \label{fig:hyperparameters}.
 \end{figure}
 
-The resulting performance for the five datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifier are very much alike in terms of perfomance and the Sparsemax classifier only has significant better performance on the Iris dataset.
+The JS divergence on the test set for the five datasets and the miss rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifier are very much alike in terms of perfomance. The Iris dataset shows an improved performance, compareing the two best cases in the regualization optimization (Table \ref{tab:hyperparameters}), also shows a statistical significant difference.
+
 \begin{table}[H]
 \centering
 \input{tables/results.tex}

@@ -17,6 +17,13 @@ class ModelEvaluator:
         self.x = dataset.inputs
         self.t = dataset.targets
 
+    @staticmethod
+    def evaluate(model, x_test, t_test):
+        # prediction on test data
+        target = t_test
+        predict = model.predict(x_test)
+        return np.mean(_jensen_shannon_divergence(predict, target))
+
     def single_fold(self, fold, train_index, test_index):
         # select datasets
         x_train = self.x[train_index, :]
@@ -31,9 +38,7 @@ class ModelEvaluator:
         self.model.update(x_train, t_train, epochs=self.epochs)
 
         # prediction on test data
-        target = t_test
-        predict = self.model.predict(x_test)
-        divergence = np.mean(_jensen_shannon_divergence(predict, target))
+        divergence = self.evaluate(self.model, x_test, t_test)
 
         if self.verbose:
             print('      %d: %f' % (fold, divergence))

@@ -46,7 +46,7 @@ def hyperparameter(regressors, datasets, regualizer_values,
 
                 with regression as model:
                     evaluator = ModelEvaluator(
-                        model, dataset,
+                        model, dataset.train,
                         epochs=min(epochs, dataset.epochs),
                         random_state=42
                     )
