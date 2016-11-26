@@ -37,12 +37,6 @@ Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respe
 \caption{JS divergence using a range of regularizers on all five datasets for the two regressors.}
 \label{fig:hyperparameters}.
 \end{figure}
-\begin{table}[H]
-\centering
-\input{tables/hyperparameter.tex}
-\caption{Regualizer values and the corresponding JS divergence for both classifiers. 5-fold cross validation was used in the training data.}
-\label{tab:hyperparameters}
-\end{table}
 
 The JS divergence on the test set for the five datasets and the miss rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifier are very much alike in terms of performance. The Iris dataset shows an improved performance, comparing the two best cases in the regularization optimization (Table \ref{tab:hyperparameters}), also shows a statistical significant difference.
 
@@ -66,9 +60,7 @@ The four implementations where benchmarked using the datasets from Table \ref{ta
 For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version has a large overhead, which, as expected, slows the implementation. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
 
 \subsection{Encoder-decoder with a sparse attention mechanism}
-A suitable application of sparsemax is in attention mechanisms. When a standard Encoder-Decoder RNN is applied to a sentence the last state of the encoder has to retain all the information to generate the decoding. For longer sentences this requires a huge state vector which is hard to learn. Attention mechanisms let's the decoder selectively look at different parts of the sentence based on what the encoding is and decoding produced so far. This reduces the needed size of the encoding state vector. 
-
-For encoding-decoding task the classical attention approach is to use a softmax activation function to compute the attentions $a_i$. This means that $a_i=0$ occurs rarely, which implies that the decoder does pay some attention to the entire sequence. However, if one uses the sparsemax activation function $a_i$ will be sparse and thus the model should only "attend" to the relevant subset of the sequence. The difference in attention distribution and realized model accuracy between the attention functions can be seen in figures \ref{fig:sparsemax} and \ref{fig:softmax}. 
+The difference in attention distribution and realized model accuracy between the attention functions can be seen in figures \ref{fig:sparsemax} and \ref{fig:softmax}.
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=0.5]{figures/attention_softmax.pdf}

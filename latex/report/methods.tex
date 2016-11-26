@@ -108,7 +108,11 @@ We define Sparsemax regression as the equivalent to a multivariate logistic regr
 Where $\mathcal{L} = \mathcal{L}_{\mathrm{sparsemax}}$ defined by \eqref{sparsemax-loss-original} and \eqref{sparsemax-loss-reformulated}.
 
 \subsection{Sparsemax Attention}
-Softmax is also used in attention part of a neural network, for example recurent neural networks. The model used here is a naive simplification of the one presented in the Bahdanau et al., 2014 model \cite{attention}.
+A suitable application of sparsemax is in attention mechanisms. When a standard Encoder-Decoder RNN is applied to a sentence the last state of the encoder has to retain all the information to generate the decoding. For longer sentences this requires a huge state vector which is hard to learn. Attention mechanisms let's the decoder selectively look at different parts of the sentence based on what the encoding is and decoding produced so far. This reduces the needed size of the encoding state vector.
+
+For encoding-decoding task the classical attention approach is to use a softmax activation function to compute the attentions ${\boldsymbol\alpha}_i$. This means that ${\boldsymbol\alpha}_i=0$ never occurs, which implies that the decoder does pay some attention to the entire sequence. However, if one uses the sparsemax activation function ${\boldsymbol\alpha}_i$ will be sparse and thus the model should only "attend" to the relevant subset of the sequence.
+
+The model used here is a naive simplification of the one presented in the Bahdanau et al., 2014 model \cite{attention}.
 
 \begin{equation}
 \begin{aligned}
@@ -120,11 +124,9 @@ Softmax is also used in attention part of a neural network, for example recurent
 & \mathbf{c}_i = {\textstyle \sum_{j=1}^T} \alpha_{ij} \mathbf{h}_j \\
 \text{decoder:} & \\
 &\mathbf{s}_i = \mathrm{GRU}(\mathbf{c}_i, \mathbf{s}_{i-1}) \\
-&\mathbf{y}_i = \overleftarrow{\mathbf{E}} \mathbf{s}_i
+&\mathbf{y}_i = \mathrm{softmax}(\overleftarrow{\mathbf{E}} \mathbf{s}_i)
 \end{aligned}
 \label{eq:attention-model}
 \end{equation}
 
 In this attention model \eqref{eq:attention-model}, $\overrightarrow{\mathbf{E}}$ and $\overleftarrow{\mathbf{E}}$ are embedding models, trained simultaniusely with the RNN. $\mathbf{W}$, $\mathbf{U}$ are weight matrices and $\mathbf{v}$ is a weight vector.
-
-It is the ${\boldsymbol\alpha}_i = \mathrm{sparsemax}(\mathbf{e}_i)$ part that is diffrent from a traditional softmax attention model. The idea is that this allows the models attention to be sparse, which intitively makes sense in natural language processing.
