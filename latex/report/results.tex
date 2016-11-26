@@ -1,6 +1,7 @@
 \section{Results}
 Next the sparsemax transformation is evaluated using the model defined by \eqref{sparsemax-regression}. For comparison we report the softmax regression results as well. The four different implementations plus the reference softmax implementation are refered to as:
 \begin{itemize}
+\setlength\itemsep{-0.3em}
 \item Softmax: A TensorFlow implementation of Softmax Regression.
 \item Numpy: A pure Numpy implementation of Sparsemax Regression.
 \item TF Numpy: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented using only Numpy.
@@ -23,18 +24,18 @@ For comparison of performance the Jensen-Shannon divergence between the predicte
 \end{equation*}
 
 Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For all the classifiers a L2 regualizer is used, the regualization constants used can be seen in Table \ref{tab:hyperparameters}. The hyperparemeter were tuned using a stratified 5-split cross-validation for MNIST and Iris and non-stratified for the rest, where the resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models where optimized using the Adam algorithm with default parameters, a learning rate of 0.001 and $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$ and the Numpy implementation used Gradient Descent with a learning rate of $1\mathrm{e}{-2}$.
-\begin{table}[H]
-\centering
-\input{tables/hyperparameter.tex}
-\caption{Regualizer values and the corresponding JS divergence for both classifiers. 5-fold cross validation was used in the training data.}
-\label{tab:hyperparameters}
-\end{table}
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=1]{figures/hyperparameter.pdf}
 \caption{JS divergence using a range of regualizers on all five datasets for the two regressors.}
 \label{fig:hyperparameters}.
 \end{figure}
+\begin{table}[H]
+\centering
+\input{tables/hyperparameter.tex}
+\caption{Regualizer values and the corresponding JS divergence for both classifiers. 5-fold cross validation was used in the training data.}
+\label{tab:hyperparameters}
+\end{table}
 
 The JS divergence on the test set for the five datasets and the miss rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifier are very much alike in terms of perfomance. The Iris dataset shows an improved performance, compareing the two best cases in the regualization optimization (Table \ref{tab:hyperparameters}), also shows a statistical significant difference.
 

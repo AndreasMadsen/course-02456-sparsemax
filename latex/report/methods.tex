@@ -106,3 +106,25 @@ We define Sparsemax regression as the equivalent to a multivariate logistic regr
 \label{sparsemax-regression}
 \end{equation}
 Where $\mathcal{L} = \mathcal{L}_{\mathrm{sparsemax}}$ defined by \eqref{sparsemax-loss-original} and \eqref{sparsemax-loss-reformulated}.
+
+\subsection{Sparsemax Attention}
+Softmax is also used in attention part of a neural network, for example recurent neural networks. The model used here is a naive simplification of the one presented in the Bahdanau et al., 2014 model \cite{attention}.
+
+\begin{equation}
+\begin{aligned}
+\text{encoding:} & \\
+& \mathbf{h}_t = \mathrm{GRU}(\overrightarrow{\mathbf{E}} \mathbf{x}_t, \mathbf{h}_{t-1}) \\
+\text{attention:} & \\
+& e_{ij} = \mathbf{v}^T \tanh(\mathbf{W} \mathbf{s}_{i-1} + \mathbf{U} \mathbf{h}_j) \\
+& {\boldsymbol\alpha}_i = \mathrm{sparsemax}(\mathbf{e}_i) \\
+& \mathbf{c}_i = {\textstyle \sum_{j=1}^T} \alpha_{ij} \mathbf{h}_j \\
+\text{decoder:} & \\
+&\mathbf{s}_i = \mathrm{GRU}(\mathbf{c}_i, \mathbf{s}_{i-1}) \\
+&\mathbf{y}_i = \overleftarrow{\mathbf{E}} \mathbf{s}_i
+\end{aligned}
+\label{eq:attention-model}
+\end{equation}
+
+In this attention model \eqref{eq:attention-model}, $\overrightarrow{\mathbf{E}}$ and $\overleftarrow{\mathbf{E}}$ are embedding models, trained simultaniusely with the RNN. $\mathbf{W}$, $\mathbf{U}$ are weight matrices and $\mathbf{v}$ is a weight vector.
+
+It is the ${\boldsymbol\alpha}_i = \mathrm{sparsemax}(\mathbf{e}_i)$ part that is diffrent from a traditional softmax attention model. The idea is that this allows the models attention to be sparse, which intitively makes sense in natural language processing.
