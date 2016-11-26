@@ -1,4 +1,4 @@
-from __future__ import print_function
+#changed to python3 
 import numpy as np
 
 target_to_text = {
@@ -28,13 +28,14 @@ def print_valid_characters():
     print(l)
 
 ninput_chars = len(valid_characters)
-def get_batch(batch_size=100, min_digits = 3, max_digits=3):
+def get_batch(batch_size=100, min_digits = 3, max_digits=3, random_seed=42):
     '''
     Generates random sequences of integers and translates them to text i.e. 1->'one'.
     :param batch_size: number of samples to return
     :param min_digits: minimum length of target
     :param max_digits: maximum length of target
     '''
+    np.random.seed(random_seed)
     text_inputs = []
     int_inputs = []
     text_targets_in = []
@@ -49,13 +50,13 @@ def get_batch(batch_size=100, min_digits = 3, max_digits=3):
         text_target_out = text_target + stop_character
 
         #generate the targets as a list of intergers
-        int_target_in = map(lambda c: valid_characters.index(c), text_target_in)
-        int_target_out = map(lambda c: valid_characters.index(c), text_target_out)
+        int_target_in = list(map(lambda c: valid_characters.index(c), text_target_in))
+        int_target_out = list(map(lambda c: valid_characters.index(c), text_target_out))
 
         #generate the text input
         text_input = " ".join(map(lambda k: target_to_text[k], inp_str))
         #generate the inputs as a list of intergers
-        int_input = map(lambda c: valid_characters.index(c), text_input)
+        int_input = list(map(lambda c: valid_characters.index(c), text_input))
 
         text_inputs.append(text_input)
         int_inputs.append(int_input)
@@ -72,7 +73,7 @@ def get_batch(batch_size=100, min_digits = 3, max_digits=3):
         cur_len = len(inp)
         inputs[i,:cur_len] = inp
 #        input_masks[i,:cur_len] = 1
-    inputs_seqlen = np.asarray(map(len, int_inputs))
+    inputs_seqlen = np.asarray(list(map(len, int_inputs)))
 
     max_target_in_len = max(map(len, int_targets_in))
     targets_in = np.zeros((batch_size, max_target_in_len))
@@ -80,7 +81,7 @@ def get_batch(batch_size=100, min_digits = 3, max_digits=3):
     for (i, tar) in enumerate(int_targets_in):
         cur_len = len(tar)
         targets_in[i, :cur_len] = tar
-    targets_seqlen = np.asarray(map(len, int_targets_in))
+    targets_seqlen = np.asarray(list(map(len, int_targets_in)))
 
     max_target_out_len = max(map(len, int_targets_out))
     targets_out = np.zeros((batch_size, max_target_in_len))
