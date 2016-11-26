@@ -1,5 +1,5 @@
 \section{Results}
-Next the sparsemax transformation is evaluated using the model defined by \eqref{sparsemax-regression}. For comparison we report the softmax regression results as well. The four different implementations plus the reference softmax implementation are refered to as:
+Next the sparsemax transformation is evaluated using the model defined by \eqref{sparsemax-regression}. For comparison we report the softmax regression results as well. The four different implementations plus the reference softmax implementation are referred to as:
 \begin{itemize}
 \setlength\itemsep{-0.3em}
 \item Softmax: A TensorFlow implementation of Softmax Regression.
@@ -23,11 +23,18 @@ For comparison of performance the Jensen-Shannon divergence between the predicte
 \mathbf{JS(q,p)}:=\frac{1}{2}\mathbf{KL}\left(\mathbf{q}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)+\frac{1}{2}\mathbf{KL}\left(\mathbf{p}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)
 \end{equation*}
 
-Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For all the classifiers a L2 regualizer is used, the regualization constants used can be seen in Table \ref{tab:hyperparameters}. The hyperparemeter were tuned using a stratified 5-split cross-validation for MNIST and Iris and non-stratified for the rest, where the resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models where optimized using the Adam algorithm with default parameters, a learning rate of 0.001 and $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$ and the Numpy implementation used Gradient Descent with a learning rate of $1\mathrm{e}{-2}$.
+Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For all the classifiers an L2 regularizer is used and the regularization constants can be seen in Table \ref{tab:hyperparameters}. The hyperparameter was tuned using a stratified 5-split cross-validation for the MNIST and Iris datasets and non-stratified for the rest, where the resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models where optimized using the Adam algorithm with default parameters, a learning rate of 0.001 and $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$ and the Numpy implementation used Gradient Descent with a learning rate of $1\mathrm{e}{-2}$.
+
+\begin{table}[H]
+\centering
+\input{tables/hyperparameter.tex}
+\caption{Regularization values and the corresponding JS divergence for both classifiers. 5-fold cross validation was used in the training data.}
+\label{tab:hyperparameters}
+\end{table}
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=1]{figures/hyperparameter.pdf}
-\caption{JS divergence using a range of regualizers on all five datasets for the two regressors.}
+\caption{JS divergence using a range of regularizers on all five datasets for the two regressors.}
 \label{fig:hyperparameters}.
 \end{figure}
 \begin{table}[H]
@@ -37,7 +44,7 @@ Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respe
 \label{tab:hyperparameters}
 \end{table}
 
-The JS divergence on the test set for the five datasets and the miss rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifier are very much alike in terms of perfomance. The Iris dataset shows an improved performance, compareing the two best cases in the regualization optimization (Table \ref{tab:hyperparameters}), also shows a statistical significant difference.
+The JS divergence on the test set for the five datasets and the miss rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifier are very much alike in terms of performance. The Iris dataset shows an improved performance, comparing the two best cases in the regularization optimization (Table \ref{tab:hyperparameters}), also shows a statistical significant difference.
 
 \begin{table}[H]
 \centering
@@ -56,7 +63,7 @@ The JS divergence on the test set for the five datasets and the miss rate for th
 \subsection{Computational performance}
 The four implementations where benchmarked using the datasets from Table \ref{tab:datasets}. In Table \ref{tab:timings} the the time performance is shown and compared with the native TensorFlow Softmax implementation. Each implementation has been run for 100 epochs during timing on a Tesla K40 for the GPU implementations.
 
-For the large dataset, MNIST, the GPU implementation siginficantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version encours a large overhead, which, as expected, slows the implementation. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
+For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version has a large overhead, which, as expected, slows the implementation. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
 
 \subsection{Encoder-decoder with a sparse attention mechanism}
 A suitable application of sparsemax is in attention mechanisms. When a standard Encoder-Decoder RNN is applied to a sentence the last state of the encoder has to retain all the information to generate the decoding. For longer sentences this requires a huge state vector which is hard to learn. Attention mechanisms let's the decoder selectively look at different parts of the sentence based on what the encoding is and decoding produced so far. This reduces the needed size of the encoding state vector. 
