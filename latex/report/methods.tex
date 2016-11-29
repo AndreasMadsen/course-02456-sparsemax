@@ -5,7 +5,7 @@ The softmax transformation is defined as:
 \mathrm{softmax}_i(\mathbf{z}) \coloneqq \frac{\exp(z_i)}{\sum_{j} \exp(z_j)}
 \end{equation}
 
-This transformation maps from $z \in \mathbb{R}^K$ to a probability distribution $\mathbb{P}^K \coloneqq \{ \mathbf{p} \in \mathbb{R}^K,  \mathbf{1}^T \mathbf{p} = 1, \mathbf{p} \ge \mathbf{0} \}$. $\mathbf{1}^T \mathbf{p} = 1$ is ensured by dividing by the sum, likewise $\mathbf{p} \ge \mathbf{0}$ is ensured by the exponential function. However it is precisely the exponential function that prevents the softmax properbility distribution from becoming sparse.
+This transformation maps from $z \in \mathbb{R}^K$ to a probability distribution $\mathbb{P}^K \coloneqq \{ \mathbf{p} \in \mathbb{R}^K,  \mathbf{1}^T \mathbf{p} = 1, \mathbf{p} \ge \mathbf{0} \}$. $\mathbf{1}^T \mathbf{p} = 1$ is ensured by dividing by the sum, likewise $\mathbf{p} \ge \mathbf{0}$ is ensured by the exponential function. However it is precisely the exponential function that prevents the softmax probability distribution from becoming sparse.
 
 To allow sparsity, Martins et al. \cite{sparsemax} suggest  using the following optimization problem instead:
 \begin{equation}
@@ -129,4 +129,4 @@ The model used here is a naive simplification of the one presented in the Bahdan
 \label{eq:attention-model}
 \end{equation}
 
-In this attention model \eqref{eq:attention-model}, $\overrightarrow{\mathbf{E}}$ and $\overleftarrow{\mathbf{E}}$ are embedding models, trained simultaniusely with the RNN. $\mathbf{W}$, $\mathbf{U}$ are weight matrices and $\mathbf{v}$ is a weight vector.
+In this attention model \eqref{eq:attention-model}, $\overrightarrow{\mathbf{E}}$ and $\overleftarrow{\mathbf{E}}$ are embedding models, trained simultaneously with the RNN. $\mathbf{W}$, $\mathbf{U}$ are weight matrices and $\mathbf{v}$ is a weight vector.

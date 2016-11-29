@@ -55,9 +55,9 @@ The JS divergence on the test set for the five datasets and the miss rate for th
 \end{table*}
 
 \subsection{Computational performance}
-The four implementations where benchmarked using the datasets from Table \ref{tab:datasets}. In Table \ref{tab:timings} the the time performance is shown and compared with the native TensorFlow Softmax implementation. Each implementation has been run for 100 epochs during timing on a Tesla K40 for the GPU implementations.
+The four implementations were benchmarked using the datasets from Table \ref{tab:datasets}. In Table \ref{tab:timings} the the time performance is shown and compared with the native TensorFlow Softmax implementation. Each implementation has been run for 100 epochs during timing on a Tesla K40 for the GPU implementations.
 
-For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version has a large overhead, which, as expected, slows the implementation. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
+For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version has a large overhead, which slows the implementation. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
 
 \subsection{Encoder-decoder with a sparse attention mechanism}
 \subsubsection{Training procedure}

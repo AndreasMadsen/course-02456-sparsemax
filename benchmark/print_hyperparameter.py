@@ -56,7 +56,7 @@ def to_dataframe(data, col_names, row_names, regualizer_values):
     iterables = [row_names, col_names, regualizer_values]
     index = pd.MultiIndex.from_product(
         iterables,
-        names=['datasets', 'regressors', 'regualizer']
+        names=['datasets', 'regressors', 'regularizer']
     )
 
     # http://stackoverflow.com/questions/36853594
