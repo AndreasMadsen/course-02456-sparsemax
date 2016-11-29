@@ -60,6 +60,11 @@ The four implementations where benchmarked using the datasets from Table \ref{ta
 For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version has a large overhead, which, as expected, slows the implementation. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
 
 \subsection{Encoder-decoder with a sparse attention mechanism}
+\subsubsection{Training procedure}
+Weights in the encoder-decoder model defined in \eqref{eq:attention-model} have all been initialized using a truncated random normal with a standard deviation of 0.1 except for bias terms which have been initialized using a constant initializer of 1. 
+
+The model was optimized using the ADAM optimizer with a learning rate of 0.005, $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$, batch sizes of 100 observations and for a 1000 epochs.
+
 The difference in attention distribution and realized model accuracy between the attention functions can be seen in figures \ref{fig:sparsemax} and \ref{fig:softmax}.
 \begin{figure}[H]
 	\centering
