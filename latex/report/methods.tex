@@ -108,8 +108,6 @@ We define Sparsemax regression as the equivalent to a multivariate logistic regr
 Where $\mathcal{L} = \mathcal{L}_{\mathrm{sparsemax}}$ defined by \eqref{sparsemax-loss-original} and \eqref{sparsemax-loss-reformulated}.
 
 \subsection{Sparsemax Attention}
-A suitable application of sparsemax is in attention mechanisms. When a standard Encoder-Decoder RNN is applied to a sentence the last state of the encoder has to retain all the information to generate the decoding. For longer sentences this requires a huge state vector which is hard to learn. Attention mechanisms let's the decoder selectively look at different parts of the sentence based on what the encoding is and decoding produced so far. This reduces the needed size of the encoding state vector.
-
 For encoding-decoding task the classical attention approach is to use a softmax activation function to compute the attentions ${\boldsymbol\alpha}_i$. This means that ${\boldsymbol\alpha}_i=0$ never occurs, which implies that the decoder does pay some attention to the entire sequence. However, if one uses the sparsemax activation function ${\boldsymbol\alpha}_i$ will be sparse and thus the model should only "attend" to the relevant subset of the sequence.
 
 The model used here is a naive simplification of the one presented in the Bahdanau et al., 2014 model \cite{attention}.

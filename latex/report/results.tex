@@ -57,7 +57,9 @@ The JS divergence on the test set for the five datasets and the miss rate for th
 \subsection{Computational performance}
 The four implementations were benchmarked using the datasets from Table \ref{tab:datasets}. In Table \ref{tab:timings} the the time performance is shown and compared with the native TensorFlow Softmax implementation. Each implementation has been run for 100 epochs during timing on a Tesla K40 for the GPU implementations.
 
-For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version. Both The TensorFlow Numpy version and the GPU version has a large overhead, which slows the implementation. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
+For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
+
+For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version.
 
 \subsection{Encoder-decoder with a sparse attention mechanism}
 \subsubsection{Training procedure}
@@ -66,16 +68,18 @@ Weights in the encoder-decoder model defined in \eqref{eq:attention-model} have 
 The model was optimized using the ADAM optimizer with a learning rate of 0.005, $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$, batch sizes of 100 observations and for a 1000 epochs.
 
 The difference in attention distribution and realized model accuracy between the attention functions can be seen in figures \ref{fig:sparsemax} and \ref{fig:softmax}.
+
+\todo[inline]{Explain the problem and the parameters of the problem we are solving.}
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.5]{figures/attention_softmax.pdf}
+	\includegraphics[scale=0.5,trim={5mm 12mm 5mm 5mm},clip]{figures/attention_softmax.pdf}
 	\caption{Softmax attention for an Encoder-Decoder RNN. Validation accuracy after 100k training examples: $\approx 75$\%.}
-	\label{fig:softmax}.
+	\label{fig:softmax}
 \end{figure}
 \begin{figure}[H]
  	\centering
- 	\includegraphics[scale=0.5]{figures/attention_sparsemax.pdf}
+ 	\includegraphics[scale=0.5,trim={5mm 12mm 5mm 5mm},clip]{figures/attention_sparsemax.pdf}
  	\caption{Sparsemax attention for an Encoder-Decoder RNN. Validation accuracy after 100k training examples: $\approx 98$\%.}
- 	\label{fig:sparsemax}.
+ 	\label{fig:sparsemax}
 \end{figure}
   
