@@ -68,8 +68,6 @@ Weights in the encoder-decoder model defined in \eqref{eq:attention-model} have 
 The model was optimized using the ADAM optimizer with a learning rate of 0.005, $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$, batch sizes of 100 observations and for a 1000 epochs.
 
 \subsubsection{Sparse attention}
-In a simple encoder-decoder model the encoder RNN usually encodes the entire input sequence to a fixed state vector. The decoder RNN then condition the predictions on the state vector. A common critique of this approach is that the fixed state vector usually has to become very large in order to encode all information for a long input sequence. Even though that architectures such as LSTMs and GRUs in theory should be able to solve such problems, in practice this is not always the case. An attention mechanism is therefore often of interest. An attention mechanism implements the ability to 'attend' to certain part of the input sequence in order to produce a single word prediction. This is often a desired feature in seq2seq models. The most common implementation uses softmax to generate the weights for which each word in the input sequence are being weighted. But since softmax never becomes zero the model will always attend to all words in the sequence. Using sparsemax as the activation function instead will solve this problem. This implies that $\boldsymbol\alpha_i=0$ in \eqref{eq:attention-model} will occur in the case of sparsemax.
-
 The difference in attention distribution between the attention functions can be seen in figures \ref{fig:sparsemax} and \ref{fig:softmax}.
 
 \todo[inline]{Explain the problem and the parameters of the problem we are solving.}
