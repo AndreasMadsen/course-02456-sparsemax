@@ -62,13 +62,15 @@ For the large dataset, MNIST, the GPU implementation significantly outperforms a
 For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version.
 
 \subsection{Encoder-decoder with a sparse attention mechanism}
+The encoder-decoder model defined in \eqref{eq:attention-model} has been tested on a synthetic dataset. The core task for the model for this data is a translation task. The input sequence is a sequence of numbers spelled by regular characters e.g. "three seven four". This sequence must be translated to the actual numbers e.g. "3 7 4". We randomly generate such sequences for testing and restrict the task to predicting numbers in the range 0-9 and a end of sequence tag denoted by \#. As we suspect that sparse attention will be relatively better for longer sequences, we vary the sequence lengths from five numbers to 20 numbers. 
+
 \subsubsection{Training procedure}
-Weights in the encoder-decoder model defined in \eqref{eq:attention-model} have all been initialized using a truncated random normal with a standard deviation of 0.1 except for bias terms which have been initialized using a constant initializer of 1. 
+Weights in the model have all been initialized using a truncated random normal with a standard deviation of 0.1 except for bias terms which have been initialized using a constant initializer of 1. 
 
 The model was optimized using the ADAM optimizer with a learning rate of 0.005, $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$, batch sizes of 100 observations and for a 1000 epochs.
 
 \subsubsection{Sparse attention}
-The difference in attention distribution between the attention functions can be seen in figures \ref{fig:sparsemax} and \ref{fig:softmax}.
+The results of applying sparse attention compared to soft attention can be seen in the attention distributions in figures \ref{fig:sparsemax} and \ref{fig:softmax} together with the validation accuracy.
 
 \todo[inline]{Explain the problem and the parameters of the problem we are solving.}
 \begin{figure}[H]
