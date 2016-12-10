@@ -38,7 +38,7 @@ Problem \eqref{eq:sparsemax-QP} is the constrained quadratic program known as th
 
 Other solution methods has then later been developed, \cite{Liu2016} contains a short overview of these. A popular approach is based on median search, these algorithms have a linear time complexity. The first algorithm using median search is \cite{brucker1984a}, for a general overview of more recent algorithms see \cite{kiwiel2008a-median}. Another category is the variable fixing method, these methods avoids sorting and median finding, by finding the solution to one variable in each iteration. These algorithms have quadratic complexity, but performs much better in practice \cite{kiwiel2008a-fixing}.
 
-Unfortunately all of these methods were developed with serial computation in mind. As a consequence, they do not easily apply to a GPU implementation, which has become the mainstream computational device for neural networks. For this reason the original method \cite{Helgason1980} has been used, with only minor modifications for parallelism as described in Algorithm \ref{sparsemax-parallel-algorithm}.
+Unfortunately all of these methods were developed with serial computation in mind. As a consequence, they do not easily apply to a GPU implementation, which has become the mainstream computational device for neural networks. For this reason the original method \cite{Helgason1980} is used, with only minor modifications for parallelism as described in Algorithm \ref{sparsemax-parallel-algorithm}.
 
 \begin{algorithm}[H]
   \caption{Parallel sparemax.}
@@ -83,18 +83,18 @@ From the gradient \eqref{sparsemax-loss-gradient} one can easily create the ``Gr
 \nabla_{\mathbf{z}} \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) \cdot v = (-\mathbf{q} + \mathrm{sparsemax}(\mathbf{z})) v
 \end{equation}
 
-From \eqref{sparsemax-loss-gradient}, its primitive function, the sparsemax loss can the be derived \cite{sparsemax}:
+From \eqref{sparsemax-loss-gradient} the sparsemax loss (its primitive function) can the be derived \cite{sparsemax}:
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \frac{1}{2} \sum_{j \in S(\mathbf{z})} (z_j^2 - \tau^2(\mathbf{z})) + \frac{1}{2} ||\mathbf{q}||^2 - \mathbf{q}^T \mathbf{z}
 \label{sparsemax-loss-original}
 \end{equation}
 
-The loss function \eqref{sparsemax-loss-original} dependency on $\tau(\mathbf{z})$ is not ideal, as it is inconvenient to recalculate it or alternatively store it in memory. Fortunately, because the sum is over the support $S(\mathbf{z})$ one can reformulate it to only be dependent on $\mathbf{z}$, $\mathrm{sparsemax}(\mathbf{z})$ and $\mathbf{q}$:
+The loss function \eqref{sparsemax-loss-original} dependency on $\tau(\mathbf{z})$ is not ideal, as it is inconvenient to recalculate it or alternatively store it in memory. Fortunately, because the sum is over the support $S(\mathbf{z})$ one can reformulate it to only be dependent on $\mathbf{z}$, $\mathbf{p} = \mathrm{sparsemax}(\mathbf{z})$ and $\mathbf{q}$:
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \frac{1}{2} \sum_{j \in S(\mathbf{z})} p_j (2 z_j - p_j) + \frac{1}{2} ||\mathbf{q}||_2^2 - \mathbf{q}^T \mathbf{z}
 \label{sparsemax-loss-reformulated}
 \end{equation}
-where $\mathbf{p} = \mathrm{sparsemax}(\mathbf{z})$. Finally the sparsemax loss \eqref{sparsemax-loss-reformulated} can be changed slightly, to be a simple map and reduce which is ideal for parallization: 
+Finally the sparsemax loss \eqref{sparsemax-loss-reformulated} can be changed slightly, to be a simple map and reduce which is ideal for parallization: 
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \mathbf{1}^T \left( \mathbf{s} \odot \mathbf{p} \odot \left(\mathbf{z} - \tfrac{1}{2} \mathbf{p}\right) + \mathbf{q} \odot \left(\tfrac{1}{2} \mathbf{q} - \mathbf{z}\right)\right)
 \end{equation}
@@ -105,10 +105,10 @@ We define Sparsemax regression as the equivalent to a multivariate logistic regr
 \min_{\mathbf{W},\mathbf{b}} \, \frac{\lambda}{2} (||\mathbf{W}||^2_{F} + ||\mathbf{b}||^2_{F}) + \frac{1}{N} \sum\limits_{i=1}^n \mathcal{L} (\mathbf{W} \mathbf{x}_i + \mathbf{b}; y_i)
 \label{sparsemax-regression}
 \end{equation}
-Where $\mathcal{L} = \mathcal{L}_{\mathrm{sparsemax}}$ defined by \eqref{sparsemax-loss-original} and \eqref{sparsemax-loss-reformulated}.
+Where $\mathcal{L} = \mathcal{L}_{\mathrm{sparsemax}}$ as defined in \eqref{sparsemax-loss-original}.
 
 \subsection{Sparsemax Attention}
-In a simple encoder-decoder model the encoder RNN usually encodes the entire input sequence to a fixed state vector. The decoder RNN then condition the predictions on the state vector. A common critique of this approach is that the fixed state vector usually has to become very large in order to encode all information for a long input sequence. Even though that architectures such as LSTMs and GRUs in theory should be able to solve such problems, in practice this is not always the case. An attention mechanism is therefore often of interest. An attention mechanism implements the ability to 'attend' to certain part of the input sequence in order to produce a single word prediction. This is often a desired feature in seq2seq models. For these tasks the classical attention approach is to use a softmax activation function to compute the attentions ${\boldsymbol\alpha}_i$. This means that ${\boldsymbol\alpha}_i=0$ never occurs, which implies that the decoder does pay some attention to the entire sequence. However, if one uses the sparsemax activation function ${\boldsymbol\alpha}_i$ will be sparse and thus the model should only "attend" to the relevant subset of the sequence.
+An attention mechanism implements the ability to look at certain part of the input sequence in the encoding, in order to produce a prediction in the decodeing. This is often a desired feature in seq2seq models. For these tasks the classical attention approach is to use a softmax activation function to compute the attentions ${\boldsymbol\alpha}_i$. This means that ${\boldsymbol\alpha}_i=0$ never occurs, which implies that the decoder does pay some attention to the entire sequence. However, if one uses the sparsemax activation function, ${\boldsymbol\alpha}_i$ will be sparse and thus the model should only look at the relevant subset of the sequence.
 
 The model used here is a naive simplification of the one presented in the Bahdanau et al., 2014 model \cite{attention}.
 
@@ -117,9 +117,9 @@ The model used here is a naive simplification of the one presented in the Bahdan
 \text{encoding:} & \\
 & \mathbf{h}_t = \mathrm{GRU}(\overrightarrow{\mathbf{E}} \mathbf{x}_t, \mathbf{h}_{t-1}) \\
 \text{attention:} & \\
-& e_{ij} = \mathbf{v}^T \tanh(\mathbf{W} \mathbf{s}_{i-1} + \mathbf{U} \mathbf{h}_j) \\
+& e_{it} = \mathbf{v}^T \tanh(\mathbf{W} \mathbf{s}_{i-1} + \mathbf{U} \mathbf{h}_t) \\
 & {\boldsymbol\alpha}_i = \mathrm{sparsemax}(\mathbf{e}_i) \\
-& \mathbf{c}_i = {\textstyle \sum_{j=1}^T} \alpha_{ij} \mathbf{h}_j \\
+& \mathbf{c}_i = {\textstyle \sum_{t=1}^T} \alpha_{it} \mathbf{h}_t \\
 \text{decoder:} & \\
 &\mathbf{s}_i = \mathrm{GRU}(\mathbf{c}_i, \mathbf{s}_{i-1}) \\
 &\mathbf{y}_i = \mathrm{softmax}(\overleftarrow{\mathbf{E}} \mathbf{s}_i)
