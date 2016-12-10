@@ -14,7 +14,7 @@ For comparison of performance the Jensen-Shannon divergence between the predicte
 \mathbf{JS(q,p)}:=\frac{1}{2}\mathbf{KL}\left(\mathbf{q}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)+\frac{1}{2}\mathbf{KL}\left(\mathbf{p}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)
 \end{equation*}
 
-Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For both the classifiers an L2 regularizer is used, the optimized regularization parameters can be seen in Table \ref{tab:hyperparameters}. The hyperparameter was tuned using a stratified 5-split cross-validation for the MNIST and Iris datasets and non-stratified for the rest. The resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models where optimized using the Adam algorithm with default parameters, $\lambda = 0.001, \beta_1=0.9, \beta_2 = 0.999, \epsilon = 10^{-8}$.
+Were $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For both the classifiers an L2 regularizer is used, the optimized regularization parameters can be seen in Table \ref{tab:hyperparameters}. The hyperparameter was tuned using a stratified 5-split cross-validation for the MNIST and Iris datasets and non-stratified for the rest. The resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models were optimized using the Adam algorithm with default parameters, $\lambda = 0.001, \beta_1=0.9, \beta_2 = 0.999, \epsilon = 10^{-8}$.
 
 \begin{table}[H]
 \centering
@@ -29,7 +29,7 @@ Where $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respe
 \label{fig:hyperparameters}
 \end{figure}
 
-The JS divergence on the test set for the five datasets and the error rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifiers are very much alike in terms of performance. The Iris dataset shows an improved performance, also in the regularization optimization (Table \ref{fig:hyperparameters}) is ther a statistical significant difference for all parameter choices.
+The JS divergence on the test set for the five datasets and the error rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifiers are very much alike in terms of performance. The Iris dataset shows an improved performance, which is also apparent in the regularization optimization (Table \ref{fig:hyperparameters}) where a statistical significant difference exists for all parameter choices.
 
 \begin{table}[H]
 \centering

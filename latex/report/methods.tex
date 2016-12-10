@@ -83,7 +83,7 @@ From the gradient \eqref{sparsemax-loss-gradient} one can easily create the ``Gr
 \nabla_{\mathbf{z}} \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) \cdot v = (-\mathbf{q} + \mathrm{sparsemax}(\mathbf{z})) v
 \end{equation}
 
-From \eqref{sparsemax-loss-gradient} the sparsemax loss (its primitive function) can the be derived \cite{sparsemax}:
+From \eqref{sparsemax-loss-gradient} the sparsemax loss (its primitive function) can then be derived \cite{sparsemax}:
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \frac{1}{2} \sum_{j \in S(\mathbf{z})} (z_j^2 - \tau^2(\mathbf{z})) + \frac{1}{2} ||\mathbf{q}||^2 - \mathbf{q}^T \mathbf{z}
 \label{sparsemax-loss-original}
