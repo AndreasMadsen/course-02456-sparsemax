@@ -75,17 +75,13 @@ def format_table(fn, data):
 
 
 def main():
-    """data, col_names, row_names = results(
+    data, col_names, row_names = results(
         regressors.data_regressors, datasets.all_datasets, verbose=True
     )
     np.savez(
-        path.join(tabledir, 'results.npz'),
+        path.join(tabledir, 'classification.npz'),
         data=data, col_names=col_names, row_names=row_names
-    )"""
-    results = np.load(path.join(tabledir, 'results.npz'))
-    data = results['data']
-    col_names = results['col_names']
-    row_names = results['row_names']
+    )
 
     divergence = format_table(
         lambda val: "%.3f" % val,
@@ -100,7 +96,7 @@ def main():
         divergence, missrate,
         col_names, ['$\mathbf{JS}$', 'error rate'], row_names
     )
-    table.save(path.join(tabledir, 'results.tex'))
+    table.save(path.join(tabledir, 'classification.tex'))
 
 if __name__ == "__main__":
     main()
