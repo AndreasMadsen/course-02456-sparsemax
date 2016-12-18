@@ -23,7 +23,7 @@ This can be written as a constrained quadratic program:
 \end{equation}
 
 \subsection{Sparsemax}
-Problem \eqref{eq:sparsemax-QP} is the constrained quadratic program known as the ``continuous quadratic knapsack problem'' or a ``singly linearly constrained quadratic program''. Solving it has been studied for a few decades. The breakthrough happened in 1980 where Helgason et al. \cite{Helgason1980} proposed an $\mathcal{O}(K \log(K))$ algorithm for solving it.
+Problem \eqref{eq:sparsemax-QP} is the constrained quadratic program known as the ``continuous quadratic knapsack problem'' or a ``singly linearly constrained quadratic program''. Solving it has been studied for a few decades. A breakthrough happened in 1980 where Helgason et al. \cite{Helgason1980} proposed an $\mathcal{O}(K \log(K))$ algorithm for solving it.
 \begin{algorithm}[H]
   \caption{Calculate sparsemax probability distribution from logits $\mathbf{z}$.}
   \begin{algorithmic}[1]
@@ -36,9 +36,9 @@ Problem \eqref{eq:sparsemax-QP} is the constrained quadratic program known as th
   \end{algorithmic}
 \end{algorithm}
 
-Other solution methods has then later been developed, \cite{Liu2016} contains a short overview of these. A popular approach is based on median search, these algorithms have a linear time complexity. The first algorithm using median search is \cite{brucker1984a}, for a general overview of more recent algorithms see \cite{kiwiel2008a-median}. Another category is the variable fixing method, these methods avoids sorting and median finding, by finding the solution to one variable in each iteration. These algorithms have quadratic complexity, but performs much better in practice \cite{kiwiel2008a-fixing}.
+Other solution methods has been developed later. \cite{Liu2016} contains a short overview of these. A popular approach is based on median search, these algorithms have a linear time complexity. The first algorithm using median search is \cite{brucker1984a}, for a general overview of more recent algorithms see \cite{kiwiel2008a-median}. Another category is the variable fixing methods which avoid sorting and searching for the median, by finding the solution to one variable in each iteration. These algorithms have quadratic complexity, but performs much better in practice \cite{kiwiel2008a-fixing}.
 
-Unfortunately all of these methods were developed with serial computation in mind. As a consequence, they do not easily apply to a GPU implementation, which has become the mainstream computational device for neural networks. For this reason the original method \cite{Helgason1980} is used, with only minor modifications for parallelism as described in Algorithm \ref{sparsemax-parallel-algorithm}.
+Unfortunately all of these methods were developed with serial computation in mind. As a consequence they do not easily apply to a GPU implementation, which has become the mainstream computational device for neural networks. For this reason the original method \cite{Helgason1980} is used with only minor modifications for parallelism as described in Algorithm \ref{sparsemax-parallel-algorithm}.
 
 \begin{algorithm}[H]
   \caption{Parallel sparemax.}
@@ -59,7 +59,7 @@ Assuming $K$ processors Algorithm \ref{sparsemax-parallel-algorithm} has time co
 
 In neural network optimization where batches or mini-batches are used, one can also parallelize over the observations.
 
-The sparsemax transformation is mostly differentiable, resulting in a well-defined Jacobian for the transformation. In Tensorflow \cite{tensorflow2015-whitepaper} the chain rule is used for automatic differentiation. For example if the logits $\mathbf{z}$ is a function of some weight matrix $\mathbf{W}$, then we have:
+The sparsemax transformation is mostly differentiable, resulting in a well-defined Jacobian for the transformation. In Tensorflow \cite{tensorflow2015-whitepaper} the chain rule is used for automatic differentiation. For example if the logits $\mathbf{z}$ is a function of some weight matrix $\mathbf{W}$, then the derivative is:
 \begin{equation}
 \frac{\mathrm{sparsemax}(\mathbf{z})}{\partial \mathbf{W}} = \frac{\mathrm{sparsemax}(\mathbf{z})}{\partial \mathbf{z}} \frac{\partial \mathbf{z}}{\partial \mathbf{W}}
 \end{equation}
@@ -94,13 +94,13 @@ The loss function \eqref{sparsemax-loss-original} dependency on $\tau(\mathbf{z}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \frac{1}{2} \sum_{j \in S(\mathbf{z})} p_j (2 z_j - p_j) + \frac{1}{2} ||\mathbf{q}||_2^2 - \mathbf{q}^T \mathbf{z}
 \label{sparsemax-loss-reformulated}
 \end{equation}
-Finally the sparsemax loss \eqref{sparsemax-loss-reformulated} can be changed slightly, to be a simple map and reduce which is ideal for parallization: 
+Finally the sparsemax loss \eqref{sparsemax-loss-reformulated} can be changed slightly, to be a simple map and reduce which is ideal for parallelization: 
 \begin{equation}
 \mathcal{L}_{\mathrm{sparsemax}}(\mathbf{z}; \mathbf{q}) = \mathbf{1}^T \left( \mathbf{s} \odot \mathbf{p} \odot \left(\mathbf{z} - \tfrac{1}{2} \mathbf{p}\right) + \mathbf{q} \odot \left(\tfrac{1}{2} \mathbf{q} - \mathbf{z}\right)\right)
 \end{equation}
 
 \subsection{Sparsemax Regression}
-We define Sparsemax regression as the equivalent to a multivariate logistic regression, but where the activation function at the output layer is sparsemax rather than softmax and with a L2-regularization on the weights and biases. Thus the minimization problem becomes
+We define sparsemax regression as the equivalent to a multivariate logistic regression, but where the activation function at the output layer is sparsemax rather than softmax and with a L2-regularization on the weights and biases. Thus the minimization problem becomes
 \begin{equation}
 \min_{\mathbf{W},\mathbf{b}} \, \frac{\lambda}{2} (||\mathbf{W}||^2_{F} + ||\mathbf{b}||^2_{F}) + \frac{1}{N} \sum\limits_{i=1}^n \mathcal{L} (\mathbf{W} \mathbf{x}_i + \mathbf{b}; y_i)
 \label{sparsemax-regression}
@@ -108,7 +108,7 @@ We define Sparsemax regression as the equivalent to a multivariate logistic regr
 Where $\mathcal{L} = \mathcal{L}_{\mathrm{sparsemax}}$ as defined in \eqref{sparsemax-loss-original}.
 
 \subsection{Sparsemax Attention}
-An attention mechanism implements the ability to look at certain part of the input sequence in the encoding, in order to produce a prediction in the decodeing. This is often a desired feature in seq2seq models. For these tasks the classical attention approach is to use a softmax activation function to compute the attentions ${\boldsymbol\alpha}_i$. This means that ${\boldsymbol\alpha}_i=0$ never occurs, which implies that the decoder does pay some attention to the entire sequence. However, if one uses the sparsemax activation function, ${\boldsymbol\alpha}_i$ will be sparse and thus the model should only look at the relevant subset of the sequence.
+An attention mechanism implements the ability to look at certain part of the input sequence in the encoding, in order to produce a prediction in the decoding. This is often a desired feature in seq2seq models. For these tasks the classical attention approach is to use a softmax activation function to compute the attentions ${\boldsymbol\alpha}_i$. This means that ${\boldsymbol\alpha}_i=0$ never occurs, which implies that the decoder does pay some attention to the entire sequence. However, if one uses the sparsemax activation function, ${\boldsymbol\alpha}_i$ will be sparse and thus the model should only look at the relevant subset of the sequence.
 
 The model used here is a naive simplification of the one presented in the Bahdanau et al., 2014 model \cite{attention}.
 

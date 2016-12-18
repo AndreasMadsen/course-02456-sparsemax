@@ -14,7 +14,7 @@ For comparison of performance the Jensen-Shannon divergence between the predicte
 \mathbf{JS(q,p)}:=\frac{1}{2}\mathbf{KL}\left(\mathbf{q}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)+\frac{1}{2}\mathbf{KL}\left(\mathbf{p}\Big|\Big|\frac{\mathbf{q}+\mathbf{p}}{2}\right)
 \end{equation*}
 
-Were $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For both the classifiers an L2 regularizer is used, the optimized regularization parameters can be seen in Table \ref{tab:hyperparameters}. The hyperparameter was tuned using a stratified 5-split cross-validation for the MNIST and Iris datasets and non-stratified for the rest. The resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models were optimized using the Adam algorithm with default parameters, $\lambda = 0.001, \beta_1=0.9, \beta_2 = 0.999, \epsilon = 10^{-8}$.
+Were $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respectively and $\mathbf{KL}$ is the Kullbach-Leibler distance. For both the classifiers an L2 regularizer is used. The optimized regularization parameters can be seen in Table \ref{tab:hyperparameters}. The hyperparameter was tuned using a stratified 5-split cross-validation for the MNIST and Iris datasets and non-stratified for the rest. The resulting experiments are shown in Figure \ref{fig:hyperparameters}. The models were optimized using the Adam algorithm with default parameters, $\lambda = 0.001, \beta_1=0.9, \beta_2 = 0.999, \epsilon = 10^{-8}$.
 
 \begin{table}[H]
 \centering
@@ -29,12 +29,12 @@ Were $\mathbf{p}, \mathbf{q}$ are the predicted and target distributions, respec
 \label{fig:hyperparameters}
 \end{figure}
 
-The JS divergence on the test set for the five datasets and the error rate for the multi-class datasets is shown in Table \ref{tab:results}. The Softmax and Sparsemax classifiers are very much alike in terms of performance. The Iris dataset shows an improved performance, which is also apparent in the regularization optimization (Table \ref{fig:hyperparameters}) where a statistical significant difference exists for all parameter choices.
+The JS divergence on the test set for the five datasets and the error rate for the multi-class datasets is shown in Table \ref{tab:results}. The softmax and sparsemax classifiers are very much alike in terms of performance. The Iris dataset shows an improved performance, which is also apparent in the regularization optimization (Table \ref{fig:hyperparameters}) where a statistical significant difference exists for all parameter choices.
 
 \begin{table}[H]
 \centering
 \input{tables/classification.tex}
-\caption{JS divergence for the five benchmark datasets and the Sparsemax Classifier as well as the Softmax classifier.}
+\caption{JS divergence for the five benchmark datasets and the sparsemax classifier as well as the softmax classifier.}
 \label{tab:results}
 \end{table}
 
@@ -56,9 +56,9 @@ Four implementations were benchmarked using the datasets from Table \ref{tab:dat
 \item TF GPU: A TensorFlow implementation where the custom ops associated with Sparsemax have been implemented in C++ and CUDA for the GPU.
 \end{itemize}
 
-In Table \ref{tab:timings} the the computational performance is shown and compared with the native TensorFlow Softmax implementation. Each implementation has been run for 100 epochs. The GPU is a Nvidia\textsuperscript{\textregistered} Tesla K40c and the CPU is a Intel\textsuperscript{\textregistered} Xeon\textsuperscript{\textregistered} CPU E5-2630 v2 (12 cores).
+In Table \ref{tab:timings} the computational performance is shown and compared with the native TensorFlow Softmax implementation. Each implementation has been run for 100 epochs. The GPU is an Nvidia\textsuperscript{\textregistered} Tesla K40c and the CPU is an Intel\textsuperscript{\textregistered} Xeon\textsuperscript{\textregistered} CPU E5-2630 v2 (12 cores).
 
-For the large dataset, MNIST, the GPU implementation significantly outperforms all other Sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. Compared to the Softmax, the GPU version of TensorFlow is significantly slower, but not by much.
+For the large dataset, MNIST, the GPU implementation significantly outperforms all other sparsemax implementations as expected. The Numpy implementation runs significantly slower than the three TensorFlow implementations, also as expected. Compared to softmax, the GPU version of TensorFlow is significantly slower, but not by much.
 
 For the Iris dataset, which is considerably smaller in size, the Numpy and TensorFlow CPU version outperforms both the GPU and Tensorflow Numpy version.
 
@@ -69,7 +69,7 @@ The weights in the model have all been initialized using a truncated random norm
 
 The model was optimized using the ADAM optimizer with a learning rate of 0.005, $\beta_1=0.9, \, \beta_2 = 0.999, \, \epsilon = 1\mathrm{e}{-8}$, batch sizes of 100 observations and for a 1000 epochs.
 
-The results of applying sparse attention compared to soft attention, can be seen in the attention plots Figure \ref{fig:sparsemax} and Figure \ref{fig:softmax}, the validation accuracy is stated in the figure caption.
+The results of applying sparse attention compared to soft attention, can be seen in the attention plots Figure \ref{fig:sparsemax} and Figure \ref{fig:softmax}. The validation accuracy is stated in the figure caption.
 
 \begin{figure}[H]
 	\centering

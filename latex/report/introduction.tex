@@ -4,9 +4,9 @@ The softmax transformation is a well known component in classic statistics such 
 
 The softmax transformation is very popular, likely because of its simplicity. It is easy to evaluate, differentiate and has a simple convex loss function associated to it.
 
-However, while softmax is very simple, its simplistic design is also what causes its shortcomings. It is impossible for its output to be sparse. This can be a big issue in cases where one would expect or want a sparse distribution.
+However, while softmax is very simple, its simplistic design also has drawbacks. It is impossible for its output to be sparse. This can be a big issue in cases where one would expect or want a sparse distribution.
 
-A simple way of obtaining sparse probabilities, is to optimize a threshold value and then truncate all the softmax values below this threshold value to zero. This would be easy to implement, but this doesn't fit well with the cross entropy function that uses $\log(\mathrm{softmax}(\mathbf{z})_i)$ as it is not defined for $\log(0)$.
+A simple way of obtaining sparse probabilities, is to optimize a threshold value and then truncate all the softmax values below this threshold value to zero. This would be easy to implement but doesn't fit well with the cross entropy function that uses $\log(\mathrm{softmax}(\mathbf{z})_i)$ as it is not defined for $\log(0)$.
 
 A recent alternative to softmax is the sparsemax transformation \cite{sparsemax}. This has been shown to have many properties in common with the softmax transformation. It also has an associated convex loss function. This can make it an attractive alternative to multinomial logistic regression, especially when the target is multi-labelled.
 
